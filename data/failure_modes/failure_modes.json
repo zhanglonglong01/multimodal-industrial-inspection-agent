@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "synthetic": true,
+  "failure_modes": [
+    {
+      "mode_id": "pump_seal_leakage",
+      "asset_type": "pump",
+      "name": "Pump seal leakage",
+      "description": "Synthetic failure mode representing loss of containment near the pump seal.",
+      "symptoms": [
+        "Visible liquid trace near the seal area",
+        "Increasing vibration during the affected window",
+        "Falling outlet pressure during the affected window"
+      ],
+      "visual_labels": ["leakage_trace"],
+      "related_sensors": ["vibration", "outlet_pressure"],
+      "possible_causes": [
+        "Synthetic seal wear or damage",
+        "Synthetic seal installation or alignment issue"
+      ],
+      "recommended_checks": [
+        "Confirm that the visible trace is not residual cleaning fluid",
+        "Compare pressure and vibration over the same observation window",
+        "Request inspection by a qualified maintainer"
+      ],
+      "source": "KNOW-PUMP-MANUAL / Seal leakage indicators (synthetic demo source)"
+    },
+    {
+      "mode_id": "motor_bearing_fault",
+      "asset_type": "motor",
+      "name": "Motor bearing fault",
+      "description": "Synthetic failure mode representing a localized motor bearing condition.",
+      "symptoms": [
+        "Discoloration around the bearing housing",
+        "Increasing bearing vibration",
+        "Increasing bearing temperature while current remains in its normal band"
+      ],
+      "visual_labels": ["discoloration"],
+      "related_sensors": ["vibration", "bearing_temperature"],
+      "possible_causes": [
+        "Synthetic lubrication degradation",
+        "Synthetic bearing wear or mechanical misalignment"
+      ],
+      "recommended_checks": [
+        "Preserve the measurement window and confirm sensor units",
+        "Document the highlighted bearing-housing region",
+        "Request inspection by a qualified maintainer"
+      ],
+      "source": "KNOW-MOTOR-MANUAL / Bearing fault indicators (synthetic demo source)"
+    }
+  ]
+}

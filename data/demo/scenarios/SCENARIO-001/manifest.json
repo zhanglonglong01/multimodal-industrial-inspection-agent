@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "SCENARIO-001",
+  "name": "Pump Seal Leakage",
+  "description": "Synthetic pump scenario with rising vibration and falling outlet pressure during a seal-leakage window.",
+  "synthetic": true,
+  "asset_id": "PUMP-001",
+  "image_fixture_id": "IMAGE-SCENARIO-001",
+  "knowledge_document_ids": [
+    "KNOW-PUMP-MANUAL",
+    "KNOW-INSPECTION-SOP"
+  ],
+  "sensor_data": {
+    "dataset_id": "DATASET-SCENARIO-001",
+    "format": "csv",
+    "path": "sensor_data.csv",
+    "sha256": "43ed4f47ac91d7b91be3298cc27aefdfc32e4e9e3b0c88959754824c7f6f916e",
+    "random_seed": 20260812,
+    "timestamp_column": "timestamp",
+    "sensor_columns": [
+      "vibration",
+      "bearing_temperature",
+      "outlet_pressure"
+    ],
+    "sample_interval_seconds": 300,
+    "row_count": 288,
+    "start_time": "2025-01-01T00:00:00Z",
+    "end_time": "2025-01-01T23:55:00Z"
+  },
+  "ground_truth": {
+    "window_semantics": "[start_time, end_time)",
+    "is_normal": false,
+    "expected_failure_mode": "pump_seal_leakage",
+    "sensor_anomalies": [
+      {
+        "sensor_name": "vibration",
+        "start_time": "2025-01-01T18:00:00Z",
+        "end_time": "2025-01-01T20:00:00Z",
+        "direction": "increase",
+        "failure_mode": "pump_seal_leakage",
+        "injection": "linear positive offset added to the normal vibration baseline"
+      },
+      {
+        "sensor_name": "outlet_pressure",
+        "start_time": "2025-01-01T18:00:00Z",
+        "end_time": "2025-01-01T20:00:00Z",
+        "direction": "decrease",
+        "failure_mode": "pump_seal_leakage",
+        "injection": "linear negative offset applied to the normal pressure baseline"
+      }
+    ]
+  }
+}

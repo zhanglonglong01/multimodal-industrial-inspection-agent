@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "synthetic": true,
+  "fixtures": [
+    {
+      "fixture_id": "IMAGE-SCENARIO-001",
+      "scenario_id": "SCENARIO-001",
+      "asset_id": "PUMP-001",
+      "path": "demo/fixtures/images/pump_seal_leak.svg",
+      "media_type": "image/svg+xml",
+      "sha256": "ec4b839ad200da8247031d438d781f233be83b96a953163a3433a8dad7a6ec71",
+      "synthetic": true,
+      "fixture_only": true,
+      "visual_labels": [
+        "leakage_trace"
+      ],
+      "description": "Synthetic schematic showing a visible liquid trace below a pump seal."
+    },
+    {
+      "fixture_id": "IMAGE-SCENARIO-002",
+      "scenario_id": "SCENARIO-002",
+      "asset_id": "MOTOR-001",
+      "path": "demo/fixtures/images/motor_bearing_fault.svg",
+      "media_type": "image/svg+xml",
+      "sha256": "844c1ffe3ebecb008188fb8bc3eeed5092786f9ca17edd060637199866a11213",
+      "synthetic": true,
+      "fixture_only": true,
+      "visual_labels": [
+        "bearing_discoloration"
+      ],
+      "description": "Synthetic schematic highlighting discoloration around a motor bearing."
+    },
+    {
+      "fixture_id": "IMAGE-SCENARIO-003",
+      "scenario_id": "SCENARIO-003",
+      "asset_id": "PUMP-001",
+      "path": "demo/fixtures/images/pump_normal.svg",
+      "media_type": "image/svg+xml",
+      "sha256": "6b2b887fc4089fb6898cb0160222e4ccae2bc415a7884afb5a95d83f2d51bb1f",
+      "synthetic": true,
+      "fixture_only": true,
+      "visual_labels": [
+        "no_visible_anomaly"
+      ],
+      "description": "Synthetic schematic of a pump with no highlighted visual anomaly."
+    }
+  ]
+}

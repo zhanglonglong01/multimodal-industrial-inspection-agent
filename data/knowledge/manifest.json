@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "documents": [
+    {
+      "document_id": "KNOW-PUMP-MANUAL",
+      "title": "Synthetic Centrifugal Pump Maintenance Manual",
+      "document_type": "manual",
+      "version": "1.0",
+      "path": "knowledge/pump_maintenance_manual.md",
+      "synthetic": true,
+      "asset_types": ["pump"]
+    },
+    {
+      "document_id": "KNOW-MOTOR-MANUAL",
+      "title": "Synthetic Induction Motor Maintenance Manual",
+      "document_type": "manual",
+      "version": "1.0",
+      "path": "knowledge/motor_maintenance_manual.md",
+      "synthetic": true,
+      "asset_types": ["motor"]
+    },
+    {
+      "document_id": "KNOW-INSPECTION-SOP",
+      "title": "Synthetic Visual and Sensor Inspection SOP",
+      "document_type": "sop",
+      "version": "1.0",
+      "path": "knowledge/inspection_sop.md",
+      "synthetic": true,
+      "asset_types": ["pump", "motor"]
+    }
+  ]
+}
+

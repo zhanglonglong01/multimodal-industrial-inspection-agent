@@ -149,6 +149,8 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
@@ -208,6 +210,11 @@ tempCodeRunnerFile.py
 
 # PyPI configuration file
 .pypirc
+
+# Project runtime state (versioned demo CSV/manifests remain tracked)
+data/runtime/
+*.db-wal
+*.db-shm
 
 # Marimo
 marimo/_static/

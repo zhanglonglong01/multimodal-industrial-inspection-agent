@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "queries": [
+    {
+      "query_id": "QUERY-SCENARIO-001-PUMP-LEAKAGE",
+      "scenario_id": "SCENARIO-001",
+      "query": "pump leakage",
+      "expected_relevant_chunk_ids": [
+        "CHUNK-KNOW-PUMP-MANUAL-SEAL-LEAKAGE-INDICATORS-001"
+      ]
+    },
+    {
+      "query_id": "QUERY-SCENARIO-001-SEAL-INSPECTION",
+      "scenario_id": "SCENARIO-001",
+      "query": "seal leakage inspection",
+      "expected_relevant_chunk_ids": [
+        "CHUNK-KNOW-PUMP-MANUAL-SEAL-LEAKAGE-INDICATORS-001"
+      ]
+    },
+    {
+      "query_id": "QUERY-SCENARIO-002-BEARING",
+      "scenario_id": "SCENARIO-002",
+      "query": "motor bearing vibration temperature",
+      "expected_relevant_chunk_ids": [
+        "CHUNK-KNOW-MOTOR-MANUAL-BEARING-FAULT-INDICATORS-001"
+      ]
+    },
+    {
+      "query_id": "QUERY-SCENARIO-003-NORMAL",
+      "scenario_id": "SCENARIO-003",
+      "query": "normal inspection no visible anomaly",
+      "expected_relevant_chunk_ids": [
+        "CHUNK-KNOW-INSPECTION-SOP-NORMAL-SCENARIO-001"
+      ]
+    }
+  ]
+}

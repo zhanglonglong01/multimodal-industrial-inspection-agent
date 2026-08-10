@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "SCENARIO-002",
+  "name": "Motor Bearing Fault",
+  "description": "Synthetic motor scenario with rising bearing vibration and temperature while current remains within its normal operating band.",
+  "synthetic": true,
+  "asset_id": "MOTOR-001",
+  "image_fixture_id": "IMAGE-SCENARIO-002",
+  "knowledge_document_ids": [
+    "KNOW-MOTOR-MANUAL",
+    "KNOW-INSPECTION-SOP"
+  ],
+  "sensor_data": {
+    "dataset_id": "DATASET-SCENARIO-002",
+    "format": "csv",
+    "path": "sensor_data.csv",
+    "sha256": "30762a90f83ef143d1fa15a723dffc2322f41398e411f4ccff068ffcb159009c",
+    "random_seed": 20260813,
+    "timestamp_column": "timestamp",
+    "sensor_columns": [
+      "vibration",
+      "bearing_temperature",
+      "current"
+    ],
+    "sample_interval_seconds": 300,
+    "row_count": 288,
+    "start_time": "2025-01-01T00:00:00Z",
+    "end_time": "2025-01-01T23:55:00Z"
+  },
+  "ground_truth": {
+    "window_semantics": "[start_time, end_time)",
+    "is_normal": false,
+    "expected_failure_mode": "motor_bearing_fault",
+    "sensor_anomalies": [
+      {
+        "sensor_name": "vibration",
+        "start_time": "2025-01-01T16:00:00Z",
+        "end_time": "2025-01-01T19:00:00Z",
+        "direction": "increase",
+        "failure_mode": "motor_bearing_fault",
+        "injection": "linear positive offset added to the normal vibration baseline"
+      },
+      {
+        "sensor_name": "bearing_temperature",
+        "start_time": "2025-01-01T16:00:00Z",
+        "end_time": "2025-01-01T19:00:00Z",
+        "direction": "increase",
+        "failure_mode": "motor_bearing_fault",
+        "injection": "linear positive offset added to the normal temperature baseline"
+      }
+    ]
+  }
+}

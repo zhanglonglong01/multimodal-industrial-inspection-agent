@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480">
+  <rect width="800" height="480" fill="#f4f7fb"/>
+  <text x="40" y="50" font-family="sans-serif" font-size="24" fill="#1f2937">Synthetic fixture: MOTOR-001 bearing anomaly</text>
+  <rect x="160" y="155" width="430" height="190" rx="45" fill="#64748b"/>
+  <path d="M230 155 L260 100 L490 100 L525 155" fill="#94a3b8"/>
+  <rect x="590" y="225" width="120" height="48" fill="#475569"/>
+  <circle cx="590" cy="249" r="72" fill="#f97316" opacity="0.55" stroke="#dc2626" stroke-width="10"/>
+  <circle cx="590" cy="249" r="30" fill="#cbd5e1"/>
+  <text x="465" y="390" font-family="sans-serif" font-size="20" fill="#b91c1c">fixture bearing discoloration</text>
+</svg>
+
