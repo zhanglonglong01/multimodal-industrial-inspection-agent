@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="breadcrumb"><a href="/">Assets</a><span>/</span>{{ asset.asset_id }}</div>
+<section class="page-title"><div><p class="eyebrow">{{ asset.asset_type.value|upper }} / {{ asset.site }}</p><h1>{{ asset.name }}</h1><p>{{ asset.description }}</p></div><a class="button primary" href="/inspections/new?asset_id={{ asset.asset_id }}">New inspection</a></section>
+<div class="stats-row"><div><small>ASSET ID</small><strong>{{ asset.asset_id }}</strong></div><div><small>STATUS</small><strong class="healthy">● {{ asset.status.value|upper }}</strong></div><div><small>CRITICALITY</small><strong>{{ asset.criticality.value|upper }}</strong></div><div><small>SENSOR COUNT</small><strong>{{ asset.sensors|length }}</strong></div></div>
+<section class="section-head compact"><div><p class="eyebrow">OBSERVABILITY</p><h2>Sensor definitions</h2></div></section>
+<div class="sensor-grid">{% for sensor in asset.sensors %}<article class="sensor-card"><span class="signal-icon">∿</span><h3>{{ sensor.display_name }}</h3><code>{{ sensor.sensor_name }}</code><dl><div><dt>Operating range</dt><dd>{{ sensor.operating_min }} – {{ sensor.operating_max }}</dd></div><div><dt>Unit</dt><dd>{{ sensor.unit }}</dd></div></dl></article>{% endfor %}</div>
+<section class="section-head compact"><div><p class="eyebrow">HISTORY</p><h2>Recent inspections</h2></div></section>
+{% if inspections %}<div class="table-card"><table><thead><tr><th>Inspection</th><th>Scenario</th><th>Data</th><th>Created</th></tr></thead><tbody>{% for item in inspections %}<tr><td><a href="/inspections/{{ item.inspection_id }}">{{ item.inspection_id }}</a></td><td>{{ item.scenario_id }}</td><td><span class="synthetic-tag">Synthetic</span></td><td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-state"><h3>No inspections yet</h3><p>Start with one of the versioned synthetic scenarios.</p></div>{% endif %}
+{% endblock %}

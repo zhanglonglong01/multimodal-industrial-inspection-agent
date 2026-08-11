@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="breadcrumb"><a href="/">Assets</a><span>/</span>New inspection</div>
+<section class="page-title"><div><p class="eyebrow">CREATE INSPECTION</p><h1>Choose a reproducible demo path.</h1><p>Quick-load a fixture or upload a validated raster image. Analysis remains explicitly fixture-backed in demo mode.</p></div></section>
+<div class="notice warning"><b>Synthetic Demo Data</b><span>Every scenario, image finding, sensor series and knowledge document on this page is synthetic.</span></div>
+<section class="section-head compact"><div><p class="eyebrow">QUICK START</p><h2>Load a scenario</h2></div></section>
+<div class="scenario-grid">
+{% for scenario in scenarios %}
+<article class="scenario-card scenario-{{ loop.index }}"><span>{{ scenario.id }}</span><h3>{{ scenario.name }}</h3><p>{{ scenario.asset_id }} · {{ scenario.dataset_id }}</p>
+<form method="post" action="/ui/inspections/demo"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="asset_id" value="{{ scenario.asset_id }}"><input type="hidden" name="scenario_id" value="{{ scenario.id }}"><input type="hidden" name="sensor_dataset_id" value="{{ scenario.dataset_id }}"><button class="button {% if loop.index == 1 %}primary{% else %}ghost{% endif %}" type="submit">Load {{ scenario.id }}</button></form></article>
+{% endfor %}
+</div>
+<section class="section-head compact"><div><p class="eyebrow">VALIDATED UPLOAD</p><h2>Use your own inspection image</h2></div></section>
+<form class="form-card" method="post" action="/ui/inspections" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <div class="form-grid"><label>Asset<select name="asset_id" required>{% for asset in assets %}<option value="{{ asset.asset_id }}" {% if selected_asset == asset.asset_id %}selected{% endif %}>{{ asset.asset_id }} — {{ asset.name }}</option>{% endfor %}</select></label>
+  <label>Scenario<select name="scenario_id" id="scenario-select" required>{% for scenario in scenarios %}<option value="{{ scenario.id }}" data-asset="{{ scenario.asset_id }}" data-dataset="{{ scenario.dataset_id }}" {% if selected_scenario == scenario.id %}selected{% endif %}>{{ scenario.id }} — {{ scenario.name }}</option>{% endfor %}</select></label>
+  <label>Sensor dataset<input id="dataset-id" name="sensor_dataset_id" value="DATASET-SCENARIO-001" readonly></label></div>
+  <label class="upload-zone">Inspection image<input id="image-upload" type="file" name="image" accept="image/png,image/jpeg,image/webp" required><span>PNG, JPEG or WebP · maximum 5 MB · decoded server-side</span><img id="image-preview" alt="Image preview" hidden></label>
+  <div class="form-foot"><span><b>Fixture Vision</b> will generate the demo finding; the uploaded image is retained as the inspection artifact.</span><button class="button primary" type="submit">Create inspection</button></div>
+</form>
+{% endblock %}

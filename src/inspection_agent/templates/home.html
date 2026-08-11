@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">ASSET OPERATIONS / DEMO FLEET</p>
+    <h1>Multimodal industrial<br><em>inspection intelligence.</em></h1>
+    <p>Combine visual observations, deterministic sensor analysis and cited maintenance knowledge in one auditable workflow.</p>
+    <div class="actions"><a class="button primary" href="/inspections/new">Start an inspection</a><a class="button ghost" href="#fleet">Explore assets</a></div>
+  </div>
+  <div class="hero-panel">
+    <div class="pulse"><span></span></div>
+    <p>SYSTEM READINESS</p><strong>DEMO ONLINE</strong>
+    <dl><div><dt>Assets</dt><dd>{{ assets|length }}</dd></div><div><dt>Scenarios</dt><dd>3</dd></div><div><dt>Workflow</dt><dd>LangGraph</dd></div></dl>
+  </div>
+</section>
+
+<section id="fleet" class="section-head"><div><p class="eyebrow">REGISTERED EQUIPMENT</p><h2>Demo asset fleet</h2></div><span class="count">{{ assets|length }} assets</span></section>
+<div class="asset-grid">
+  {% for asset in assets %}
+  <article class="asset-card">
+    <div class="asset-icon {{ asset.asset_type.value }}">{% if asset.asset_type.value == 'pump' %}P{% else %}M{% endif %}</div>
+    <div class="asset-heading"><div><span class="status-dot"></span>{{ asset.status.value|upper }}</div><span class="risk-tag {{ asset.criticality.value }}">{{ asset.criticality.value }} criticality</span></div>
+    <h3>{{ asset.asset_id }}</h3><p>{{ asset.name }}</p>
+    <div class="asset-meta"><span>{{ asset.asset_type.value|title }}</span><span>{{ asset.site }}</span></div>
+    <div class="sensor-chips">{% for sensor in asset.sensors %}<span>{{ sensor.sensor_name }}</span>{% endfor %}</div>
+    <a class="card-link" href="/assets/{{ asset.asset_id }}">View asset <b>→</b></a>
+  </article>
+  {% endfor %}
+</div>
+
+{% if inspections %}
+<section class="section-head compact"><div><p class="eyebrow">RECENT ACTIVITY</p><h2>Inspections</h2></div></section>
+<div class="table-card"><table><thead><tr><th>Inspection</th><th>Asset</th><th>Scenario</th><th>Created</th></tr></thead><tbody>
+{% for item in inspections %}<tr><td><a href="/inspections/{{ item.inspection_id }}">{{ item.inspection_id }}</a></td><td>{{ item.asset_id }}</td><td>{{ item.scenario_id }}</td><td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endif %}
+{% endblock %}

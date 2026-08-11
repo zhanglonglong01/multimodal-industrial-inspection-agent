@@ -15,6 +15,7 @@ from .logging_config import configure_logging, log_event
 from .phase2 import run_scenario_analysis
 from .repository import SQLiteRepository
 from .services.knowledge import KnowledgeIndexBuilder, KnowledgeRetriever
+from .application import InspectionApplicationService
 from .workflow import WorkflowRuntime, build_initial_state, get_interrupt_payload
 from .workflow_evaluation import evaluate_graph_paths, evaluate_offline_scenarios
 from .workflow_schemas import ApprovalDecision, ApprovalDecisionInput
@@ -82,6 +83,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     commands.add_parser(
         "evaluate-workflow", help="Score all three workflows after execution"
+    )
+    commands.add_parser(
+        "init-web-demo", help="Initialize demo metadata, FAISS, uploads, and web schema"
     )
     return parser
 
@@ -181,6 +185,19 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "evaluate-workflow":
             _print_json(evaluate_offline_scenarios(settings))
+            return 0
+        if args.command == "init-web-demo":
+            service = InspectionApplicationService(settings)
+            service.initialize()
+            _print_json(
+                {
+                    "app_mode": settings.app_mode,
+                    "checks": [
+                        item.model_dump(mode="json")
+                        for item in service.readiness_checks()
+                    ],
+                }
+            )
             return 0
     except Exception as exc:
         log_event(

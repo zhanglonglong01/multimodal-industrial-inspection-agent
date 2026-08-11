@@ -1,0 +1,17 @@
+services:
+  inspection-agent:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      APP_MODE: demo
+      INSPECTION_LOG_LEVEL: INFO
+      INSPECTION_DATA_DIR: /app/data
+      INSPECTION_DATABASE_PATH: /app/data/runtime/inspection_agent.db
+      INSPECTION_CHECKPOINT_PATH: /app/data/runtime/langgraph_checkpoints.db
+    volumes:
+      - inspection-runtime:/app/data/runtime
+    restart: unless-stopped
+
+volumes:
+  inspection-runtime:

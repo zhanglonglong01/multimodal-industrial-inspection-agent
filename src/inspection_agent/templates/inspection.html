@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="breadcrumb"><a href="/">Assets</a><span>/</span><a href="/assets/{{ asset.asset_id }}">{{ asset.asset_id }}</a><span>/</span>{{ inspection.inspection_id }}</div>
+<section class="page-title"><div><p class="eyebrow">READY TO RUN</p><h1>Inspection prepared.</h1><p>{{ inspection.scenario_id }} pairs {{ asset.asset_id }} with {{ inspection.sensor_dataset_id }}.</p></div><span class="synthetic-tag large">Synthetic Demo Data</span></section>
+<div class="split-panel"><div class="image-card"><img src="/artifacts/{{ artifact.artifact_id }}" alt="Inspection artifact"><div><span>{{ artifact.media_type }}</span><span>{{ (artifact.size_bytes / 1024)|round(1) }} KB</span><span>{% if artifact.fixture %}Fixture image{% else %}Uploaded artifact{% endif %}</span></div></div>
+<div class="run-card"><p class="eyebrow">WORKFLOW INPUT</p><h2>{{ inspection.inspection_id }}</h2><dl><div><dt>Asset</dt><dd>{{ asset.asset_id }}</dd></div><div><dt>Scenario</dt><dd>{{ inspection.scenario_id }}</dd></div><div><dt>Sensor data</dt><dd>{{ inspection.sensor_dataset_id }}</dd></div><div><dt>Vision mode</dt><dd>Fixture / Synthetic</dd></div></dl>
+{% if latest_run %}<a class="button ghost full" href="/runs/{{ latest_run.run_id }}">View latest run</a>{% endif %}
+<form method="post" action="/ui/inspections/{{ inspection.inspection_id }}/run"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button primary full" type="submit">Run inspection workflow →</button></form></div></div>
+{% endblock %}

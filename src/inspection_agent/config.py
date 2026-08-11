@@ -6,7 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr, field_validator, model_validator
+from pydantic import AliasChoices, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     """Environment-backed settings with absolute local persistence paths."""
 
     app_name: str = "Multimodal Industrial Inspection Agent"
+    app_mode: Literal["demo", "live"] = Field(
+        default="demo",
+        validation_alias=AliasChoices("APP_MODE", "INSPECTION_APP_MODE"),
+    )
     app_env: Literal["development", "test", "production"] = "development"
     log_level: str = "INFO"
     data_dir: Path = Field(default=PROJECT_ROOT / "data")
@@ -25,6 +29,7 @@ class Settings(BaseSettings):
     random_seed: int = 20_260_811
     openai_api_key: SecretStr | None = None
     openai_diagnosis_model: str = "gpt-5-mini"
+    max_upload_bytes: int = 5 * 1024 * 1024
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",
@@ -108,11 +113,16 @@ class Settings(BaseSettings):
     def retrieval_evaluation_path(self) -> Path:
         return self.data_dir / "evaluation" / "retrieval_queries.json"
 
+    @property
+    def uploads_dir(self) -> Path:
+        return self.data_dir / "runtime" / "uploads"
+
     def ensure_directories(self) -> None:
         assert self.database_path is not None
         assert self.checkpoint_path is not None
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
         self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        self.uploads_dir.mkdir(parents=True, exist_ok=True)
         self.scenarios_dir.mkdir(parents=True, exist_ok=True)
         self.fixtures_dir.mkdir(parents=True, exist_ok=True)
 

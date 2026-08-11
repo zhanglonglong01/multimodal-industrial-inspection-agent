@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} · Industrial Inspection</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>
+  <script src="{{ url_for('static', path='app.js') }}" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="brand" aria-label="Industrial Inspection home">
+      <span class="brand-mark"><i></i><i></i><i></i></span>
+      <span><b>INSPECT</b><small>Industrial Intelligence</small></span>
+    </a>
+    <nav>
+      <a href="/">Assets</a>
+      <a href="/inspections/new">New inspection</a>
+      <a href="/work-orders">Work orders</a>
+      <a href="/docs">API</a>
+    </nav>
+    <span class="mode-pill">{{ app_mode|upper }} MODE</span>
+  </header>
+  <div class="demo-banner">
+    <span>Portfolio demonstration</span>
+    Synthetic industrial data · Fixture Vision · Fixture Diagnosis · No factory deployment
+  </div>
+  <main class="shell">
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    Evidence-driven diagnosis <span>•</span> deterministic risk policy <span>•</span> protected work-order side effects
+  </footer>
+</body>
+</html>

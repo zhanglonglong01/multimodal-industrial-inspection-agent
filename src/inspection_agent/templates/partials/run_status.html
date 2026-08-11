@@ -1,0 +1,5 @@
+<div id="run-status-{{ detail.run.run_id }}" class="run-state {{ detail.run.status.value|lower }}"
+  {% if detail.run.status.value in ['PENDING', 'RUNNING'] %}hx-get="/partials/runs/{{ detail.run.run_id }}" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+  <span class="status-dot"></span><b>{{ detail.run.status.value.replace('_', ' ') }}</b>
+  <span>Current stage: {{ detail.run.current_stage }}</span>
+</div>

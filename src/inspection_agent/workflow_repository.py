@@ -335,6 +335,20 @@ class WorkflowRepository:
             ).fetchone()
         return self._row_to_work_order(row) if row else None
 
+    def get_work_order(self, work_order_id: str) -> WorkOrder | None:
+        with self.connection() as connection:
+            row = connection.execute(
+                "SELECT * FROM work_orders WHERE work_order_id = ?", (work_order_id,)
+            ).fetchone()
+        return self._row_to_work_order(row) if row else None
+
+    def list_work_orders(self) -> list[WorkOrder]:
+        with self.connection() as connection:
+            rows = connection.execute(
+                "SELECT * FROM work_orders ORDER BY created_at DESC"
+            ).fetchall()
+        return [self._row_to_work_order(row) for row in rows]
+
     def count_work_orders(self, draft_id: str | None = None) -> int:
         query = "SELECT COUNT(*) AS count FROM work_orders"
         params: tuple[str, ...] = ()
