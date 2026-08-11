@@ -1,0 +1,317 @@
+{
+  "schema_version": "1.0",
+  "metadata": {
+    "commit_sha": "a1d7270",
+    "git_dirty": true,
+    "timestamp": "2026-08-11T01:40:42.292720+00:00",
+    "app_mode": "demo",
+    "vision_provider": "fixture",
+    "diagnosis_provider": "fixture_diagnosis",
+    "scenario_schema_versions": [
+      "1.0"
+    ],
+    "dataset_schema_versions": [
+      "1.0"
+    ],
+    "scenario_count": 3
+  },
+  "sensor": {
+    "detector": "rule_based_and_rolling_mad",
+    "parameters": {
+      "window_size": 97,
+      "min_periods": 25,
+      "window_alignment": "centered",
+      "robust_z_constant": 0.6745,
+      "mad_threshold": 3.5,
+      "mad_zero_fallback_score": 4.5,
+      "min_segment_points": 2,
+      "max_gap_intervals": 1,
+      "medium_score_threshold": 8.0,
+      "high_score_threshold": 12.0
+    },
+    "overall_point_metrics": {
+      "precision": 1.0,
+      "recall": 0.8916666666666667,
+      "f1": 0.9427312775330398,
+      "true_positives": 107,
+      "false_positives": 0,
+      "false_negatives": 13
+    },
+    "overall_segment_metrics": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "true_positives": 4,
+      "false_positives": 0,
+      "false_negatives": 0
+    },
+    "scenarios": [
+      {
+        "scenario_id": "SCENARIO-001",
+        "normal_case_pass": null,
+        "point_metrics": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "true_positives": 48,
+          "false_positives": 0,
+          "false_negatives": 0
+        },
+        "segment_metrics": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "true_positives": 2,
+          "false_positives": 0,
+          "false_negatives": 0
+        },
+        "expected_point_count": 48,
+        "predicted_point_count": 48,
+        "expected_segment_count": 2,
+        "predicted_segment_count": 2
+      },
+      {
+        "scenario_id": "SCENARIO-002",
+        "normal_case_pass": null,
+        "point_metrics": {
+          "precision": 1.0,
+          "recall": 0.8194444444444444,
+          "f1": 0.9007633587786259,
+          "true_positives": 59,
+          "false_positives": 0,
+          "false_negatives": 13
+        },
+        "segment_metrics": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "true_positives": 2,
+          "false_positives": 0,
+          "false_negatives": 0
+        },
+        "expected_point_count": 72,
+        "predicted_point_count": 59,
+        "expected_segment_count": 2,
+        "predicted_segment_count": 2
+      },
+      {
+        "scenario_id": "SCENARIO-003",
+        "normal_case_pass": true,
+        "expected_point_count": 0,
+        "predicted_point_count": 0,
+        "expected_segment_count": 0,
+        "predicted_segment_count": 0
+      }
+    ],
+    "normal_case_reporting": "Normal-case pass; undefined positive-class F1 is not reported."
+  },
+  "retrieval": {
+    "query_count": 4,
+    "recall_at_1": 1.0,
+    "recall_at_3": 1.0,
+    "mrr": 1.0,
+    "queries": [
+      {
+        "query_id": "QUERY-SCENARIO-001-PUMP-LEAKAGE",
+        "scenario_id": "SCENARIO-001",
+        "expected_relevant_chunk_ids": [
+          "CHUNK-KNOW-PUMP-MANUAL-SEAL-LEAKAGE-INDICATORS-001"
+        ],
+        "retrieved_chunk_ids": [
+          "CHUNK-KNOW-PUMP-MANUAL-SEAL-LEAKAGE-INDICATORS-001",
+          "CHUNK-KNOW-PUMP-MANUAL-DEMO-INSPECTION-RESPONSE-001",
+          "CHUNK-KNOW-PUMP-MANUAL-NORMAL-OPERATING-OBSERVATIONS-001"
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      {
+        "query_id": "QUERY-SCENARIO-001-SEAL-INSPECTION",
+        "scenario_id": "SCENARIO-001",
+        "expected_relevant_chunk_ids": [
+          "CHUNK-KNOW-PUMP-MANUAL-SEAL-LEAKAGE-INDICATORS-001"
+        ],
+        "retrieved_chunk_ids": [
+          "CHUNK-KNOW-PUMP-MANUAL-SEAL-LEAKAGE-INDICATORS-001",
+          "CHUNK-KNOW-INSPECTION-SOP-NORMAL-SCENARIO-001",
+          "CHUNK-KNOW-PUMP-MANUAL-NORMAL-OPERATING-OBSERVATIONS-001"
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      {
+        "query_id": "QUERY-SCENARIO-002-BEARING",
+        "scenario_id": "SCENARIO-002",
+        "expected_relevant_chunk_ids": [
+          "CHUNK-KNOW-MOTOR-MANUAL-BEARING-FAULT-INDICATORS-001"
+        ],
+        "retrieved_chunk_ids": [
+          "CHUNK-KNOW-MOTOR-MANUAL-BEARING-FAULT-INDICATORS-001",
+          "CHUNK-KNOW-MOTOR-MANUAL-NORMAL-OPERATING-OBSERVATIONS-001",
+          "CHUNK-KNOW-INSPECTION-SOP-EVIDENCE-CAPTURE-001"
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "reciprocal_rank": 1.0
+      },
+      {
+        "query_id": "QUERY-SCENARIO-003-NORMAL",
+        "scenario_id": "SCENARIO-003",
+        "expected_relevant_chunk_ids": [
+          "CHUNK-KNOW-INSPECTION-SOP-NORMAL-SCENARIO-001"
+        ],
+        "retrieved_chunk_ids": [
+          "CHUNK-KNOW-INSPECTION-SOP-NORMAL-SCENARIO-001",
+          "CHUNK-KNOW-PUMP-MANUAL-SEAL-LEAKAGE-INDICATORS-001",
+          "CHUNK-KNOW-INSPECTION-SOP-DOCUMENT-NOTICE-001"
+        ],
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "reciprocal_rank": 1.0
+      }
+    ],
+    "scope_note": "Only 4 manually defined retrieval queries."
+  },
+  "workflow": {
+    "scenario_count": 3,
+    "passed_count": 3,
+    "scenario_pass_rate": 1.0,
+    "candidate_match_count": 3,
+    "required_evidence_count": 3,
+    "interrupt_behavior_count": 3,
+    "work_order_side_effect_count": 3,
+    "scenarios": [
+      {
+        "scenario_id": "SCENARIO-001",
+        "expected_failure_mode": "pump_seal_leakage",
+        "predicted_failure_mode": "pump_seal_leakage",
+        "failure_mode_match": true,
+        "expected_anomalous_sensors": [
+          "outlet_pressure",
+          "vibration"
+        ],
+        "detected_anomalous_sensors": [
+          "outlet_pressure",
+          "vibration"
+        ],
+        "sensor_set_match": true,
+        "risk_level": "CRITICAL",
+        "expected_interrupt": true,
+        "actual_interrupt": true,
+        "interrupt_match": true,
+        "required_evidence_kinds": [
+          "KNOWLEDGE",
+          "SENSOR",
+          "VISION"
+        ],
+        "actual_evidence_kinds": [
+          "KNOWLEDGE",
+          "SENSOR",
+          "VISION"
+        ],
+        "required_evidence_present": true,
+        "work_order_expected": true,
+        "work_order_created": true,
+        "work_order_side_effect_match": true,
+        "scenario_pass": true
+      },
+      {
+        "scenario_id": "SCENARIO-002",
+        "expected_failure_mode": "motor_bearing_fault",
+        "predicted_failure_mode": "motor_bearing_fault",
+        "failure_mode_match": true,
+        "expected_anomalous_sensors": [
+          "bearing_temperature",
+          "vibration"
+        ],
+        "detected_anomalous_sensors": [
+          "bearing_temperature",
+          "vibration"
+        ],
+        "sensor_set_match": true,
+        "risk_level": "HIGH",
+        "expected_interrupt": true,
+        "actual_interrupt": true,
+        "interrupt_match": true,
+        "required_evidence_kinds": [
+          "KNOWLEDGE",
+          "SENSOR",
+          "VISION"
+        ],
+        "actual_evidence_kinds": [
+          "KNOWLEDGE",
+          "SENSOR",
+          "VISION"
+        ],
+        "required_evidence_present": true,
+        "work_order_expected": false,
+        "work_order_created": false,
+        "work_order_side_effect_match": true,
+        "scenario_pass": true
+      },
+      {
+        "scenario_id": "SCENARIO-003",
+        "expected_failure_mode": null,
+        "predicted_failure_mode": null,
+        "failure_mode_match": true,
+        "expected_anomalous_sensors": [],
+        "detected_anomalous_sensors": [],
+        "sensor_set_match": true,
+        "risk_level": "LOW",
+        "expected_interrupt": false,
+        "actual_interrupt": false,
+        "interrupt_match": true,
+        "required_evidence_kinds": [
+          "KNOWLEDGE",
+          "VISION"
+        ],
+        "actual_evidence_kinds": [
+          "KNOWLEDGE",
+          "VISION"
+        ],
+        "required_evidence_present": true,
+        "work_order_expected": false,
+        "work_order_created": false,
+        "work_order_side_effect_match": true,
+        "scenario_pass": true
+      }
+    ],
+    "metric_name": "Synthetic scenario task success"
+  },
+  "safety": {
+    "passed_count": 5,
+    "check_count": 5,
+    "all_passed": true,
+    "checks": {
+      "high_risk_approval_enforcement": true,
+      "direct_bypass_rejection": true,
+      "work_order_idempotency": true,
+      "restart_resume": true,
+      "dual_evidence_failure": true
+    }
+  },
+  "tests": {
+    "collected": 102,
+    "passed": 101,
+    "failed": 0,
+    "skipped": 1,
+    "errors": 0,
+    "duration_ms": 13061.454699840397,
+    "command": "python -m pytest -q"
+  },
+  "operational": {
+    "sensor_evaluation_ms": 45.70889985188842,
+    "retrieval_evaluation_ms": 7.0403998252004385,
+    "workflow_evaluation_ms": 449.41380014643073,
+    "graph_path_evaluation_ms": 1066.2724999710917,
+    "safety_evaluation_ms": 210.66699991934001
+  },
+  "limitations": [
+    "Three synthetic scenarios only; results are Portfolio evaluation scenario outcomes.",
+    "Four manually defined retrieval queries only.",
+    "Fixture Vision and Fixture Diagnosis make offline execution deterministic.",
+    "No metric in this report represents industrial diagnosis, vision, or production accuracy."
+  ]
+}

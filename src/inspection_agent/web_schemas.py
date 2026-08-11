@@ -8,7 +8,6 @@ from typing import Any
 
 from pydantic import Field
 
-from .analysis_schemas import Severity
 from .schemas import Asset, StrictModel
 from .workflow_schemas import ApprovalDecision, RiskLevel
 
@@ -110,6 +109,8 @@ class ApprovalDecisionRequest(StrictModel):
 class VisionSummary(StrictModel):
     available: bool
     provider: str | None = None
+    model: str | None = None
+    latency_ms: float | None = None
     fixture: bool = False
     findings: list[dict[str, Any]] = Field(default_factory=list)
 

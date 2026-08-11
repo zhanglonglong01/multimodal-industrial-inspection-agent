@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime
 from pathlib import Path
 from typing import Iterator
 
@@ -16,7 +15,6 @@ from .workflow_schemas import (
     WorkOrder,
     WorkOrderDraft,
 )
-
 
 WORKFLOW_SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS work_order_drafts (

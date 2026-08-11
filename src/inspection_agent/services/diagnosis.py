@@ -8,7 +8,7 @@ from typing import Protocol, runtime_checkable
 
 from pydantic import Field
 
-from ..analysis_schemas import EvidenceKind, EvidenceRef
+from ..analysis_schemas import EvidenceKind
 from ..config import Settings
 from ..schemas import StrictModel
 from ..workflow_schemas import (

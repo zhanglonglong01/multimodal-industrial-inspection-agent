@@ -21,7 +21,6 @@ from ..analysis_schemas import (
 )
 from ..schemas import Asset, SensorDefinition
 
-
 _MISSING_TOKENS = {"", "na", "nan", "null", "none"}
 
 
@@ -274,7 +273,7 @@ class RuleBasedAndMADDetector:
         csv_path: Path, sensor_ids: list[str]
     ) -> tuple[list[datetime], dict[str, list[float]]]:
         timestamps: list[datetime] = []
-        values = {sensor_id: [] for sensor_id in sensor_ids}
+        values: dict[str, list[float]] = {sensor_id: [] for sensor_id in sensor_ids}
         with Path(csv_path).open("r", encoding="utf-8-sig", newline="") as handle:
             for row in csv.DictReader(handle):
                 timestamps.append(_parse_timestamp(row["timestamp"]))

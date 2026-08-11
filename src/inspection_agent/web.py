@@ -1,4 +1,4 @@
-"""FastAPI API and server-rendered dashboard for the Phase 4 demo."""
+"""FastAPI API and server-rendered dashboard for the Portfolio MVP."""
 
 from __future__ import annotations
 
@@ -41,7 +41,6 @@ from .web_schemas import (
     WorkOrderView,
 )
 from .workflow_schemas import ApprovalDecision, ApprovalDecisionInput
-
 
 logger = logging.getLogger(__name__)
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -100,7 +99,7 @@ def create_app(
 
     app = FastAPI(
         title=resolved_settings.app_name,
-        version="0.1.0",
+        version="1.0.0",
         description="Portfolio demo API for synthetic industrial inspections.",
         lifespan=lifespan,
     )

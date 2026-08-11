@@ -10,7 +10,6 @@ from typing import Iterator
 
 from .web_schemas import ArtifactRecord, InspectionRecord, RunRecord
 
-
 WEB_SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS image_artifacts (
     artifact_id TEXT PRIMARY KEY,

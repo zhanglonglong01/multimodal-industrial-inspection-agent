@@ -5,8 +5,6 @@ import math
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-import pytest
-
 from inspection_agent.analysis_schemas import AnomalyMethod
 from inspection_agent.config import Settings
 from inspection_agent.demo import DEMO_ASSETS

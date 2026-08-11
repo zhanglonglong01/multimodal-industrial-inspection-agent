@@ -11,7 +11,6 @@ from pydantic import Field, field_validator, model_validator
 
 from .schemas import AssetType, StrictModel
 
-
 Identifier = Annotated[str, Field(pattern=r"^[A-Z0-9][A-Z0-9-]*$")]
 SensorId = Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]*$")]
 
@@ -118,6 +117,8 @@ class VisionAnalysisResult(StrictModel):
     negative_findings: list[VisionLabel]
     limitations: list[str] = Field(min_length=1)
     provider: str = Field(min_length=1)
+    model: str | None = None
+    latency_ms: float | None = Field(default=None, ge=0.0)
     fixture: bool
 
     @model_validator(mode="after")

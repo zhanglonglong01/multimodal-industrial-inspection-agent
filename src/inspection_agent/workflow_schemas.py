@@ -13,7 +13,6 @@ from .analysis_schemas import (
     EvidenceRef,
     FailureMode,
     Severity,
-    VisionAnalysisResult,
 )
 from .schemas import Asset, Criticality, StrictModel
 

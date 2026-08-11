@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from inspection_agent.config import Settings
 from inspection_agent.evaluation import evaluate_detector, evaluate_retrieval
+from inspection_agent.portfolio_evaluation import run_portfolio_evaluation
 from inspection_agent.services.knowledge import KnowledgeRetriever
 
 
@@ -37,3 +38,30 @@ def test_retrieval_evaluation_calculates_recall_and_mrr(
     assert report.recall_at_1 == 1.0
     assert report.recall_at_3 == 1.0
     assert report.mrr == 1.0
+
+
+def test_portfolio_evaluation_writes_truthful_offline_reports(
+    seeded_demo: Settings, tmp_path
+) -> None:
+    output_dir = tmp_path / "evaluation"
+
+    report = run_portfolio_evaluation(
+        seeded_demo,
+        output_dir=output_dir,
+        run_tests=False,
+    )
+
+    assert (output_dir / "report.json").is_file()
+    assert (output_dir / "report.md").is_file()
+    assert report["metadata"]["scenario_count"] == 3
+    assert report["metadata"]["vision_provider"] == "fixture"
+    assert report["retrieval"]["query_count"] == 4
+    assert report["workflow"]["scenario_pass_rate"] == 1.0
+    assert report["safety"]["all_passed"] is True
+    normal = next(
+        item for item in report["sensor"]["scenarios"]
+        if item["scenario_id"] == "SCENARIO-003"
+    )
+    assert normal["normal_case_pass"] is True
+    assert "point_metrics" not in normal
+    assert "Normal-case pass" in (output_dir / "report.md").read_text(encoding="utf-8")

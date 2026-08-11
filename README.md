@@ -1,65 +1,262 @@
 # Multimodal Industrial Inspection & Fault Diagnosis Agent
 
-A portfolio-scale application that demonstrates an evidence-driven industrial inspection workflow using synthetic equipment data. It is an engineering practice project—not a real factory deployment or a production maintenance system.
+![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
-## Implemented Features
+An evidence-driven portfolio application that combines inspection images, historical sensor analysis, maintenance knowledge, persistent workflow state, human approval, and protected WorkOrder creation.
 
-- FastAPI API and Jinja2/HTMX dashboard for two demo assets and three scenarios.
-- A single persistent LangGraph workflow with Fixture Vision, deterministic sensor anomaly detection, controlled failure modes, FAISS maintenance retrieval, structured diagnosis and deterministic risk policy.
-- Real LangGraph `interrupt` / `Command(resume=...)` approval flow with protected, idempotent work-order creation.
-- Plotly.js sensor curves with operating limits and highlighted anomaly windows.
-- Evidence-linked Vision, sensor, RAG, diagnosis, risk, approval and WorkOrder views.
-- Validated PNG/JPEG/WebP upload storage using content hashes and generated filenames.
-- SQLite, CSV, FAISS and local artifact storage; no external infrastructure is required.
+> All bundled assets, images, sensor series, manuals, labels, and scenarios are synthetic. This project is not a factory-validated or production safety system.
 
-All included industrial assets, sensor readings, images, manuals, findings and evaluation labels are synthetic.
+![31.5-second synthetic demo flow](docs/images/demo.gif)
+
+## Overview
+
+The application demonstrates one complete inspection loop for two synthetic assets (`PUMP-001`, `MOTOR-001`) and three versioned scenarios. A single LangGraph workflow coordinates typed services; deterministic Python handles sensor anomalies and risk; an LLM provider is limited to evidence-aware synthesis. High-risk side effects pause for human approval and resume from a SQLite checkpoint.
+
+## Why this project
+
+Industrial inspection evidence is split across visible conditions, sensor histories, failure-mode knowledge, and maintenance procedures. A useful workflow must keep those sources separate, preserve their provenance, and turn a diagnosis into an auditable action without letting a language model guess measurements or bypass approval.
+
+## Why Agent instead of a RAG Chatbot
+
+RAG is only one evidence source. The implemented system also validates image artifacts, executes a deterministic time-series detector, routes degraded branches, maintains graph state, retrieves controlled failure modes, applies a deterministic risk policy, interrupts for approval, persists checkpoints, and protects WorkOrder side effects. These state transitions and conditional actions are the reason for LangGraph; the project does not split deterministic modules into decorative “agents.”
+
+## Demo
+
+The quick-start page provides three fixed paths:
+
+| Scenario | Synthetic outcome | Workflow behavior |
+| --- | --- | --- |
+| `SCENARIO-001` | Pump seal leakage evidence | `CRITICAL` → approval → WorkOrder on approve |
+| `SCENARIO-002` | Motor bearing fault evidence | `HIGH` → approval → no WorkOrder on reject |
+| `SCENARIO-003` | Normal pump inspection | `LOW` → no fault, Draft, approval, or WorkOrder |
+
+Fixture Vision and Fixture Diagnosis are visibly labeled in the UI. They provide reproducible workflow tests and do not claim pixel inference.
+
+## Screenshots
+
+| Asset Dashboard | Pump CRITICAL path |
+| --- | --- |
+| ![Asset dashboard](docs/images/01-dashboard.png) | ![Pump critical path](docs/images/02-pump-critical.png) |
+
+| Multimodal evidence | Human approval |
+| --- | --- |
+| ![Vision and sensor evidence](docs/images/03-evidence.png) | ![Human approval](docs/images/04-approval.png) |
+
+| WorkOrder created | Normal scenario |
+| --- | --- |
+| ![WorkOrder detail](docs/images/05-work-order.png) | ![Normal scenario](docs/images/06-normal.png) |
+
+## Workflow
+
+```mermaid
+flowchart LR
+    A["Validate request"] --> B["Load asset context"]
+    B --> C["Vision provider"]
+    B --> D["Sensor detector"]
+    C --> E["Evidence gate"]
+    D --> E
+    E -->|"both unavailable"| Z["Insufficient-evidence report"]
+    E --> F["Failure modes"]
+    F --> G["Build queries + FAISS retrieval"]
+    G --> H["Structured diagnosis"]
+    H --> I["Deterministic risk policy"]
+    I -->|"no actionable fault"| N["Finalize"]
+    I -->|"HIGH / CRITICAL"| J["Draft + interrupt"]
+    J --> K["Human decision"]
+    K -->|"approve"| L["Protected WorkOrder create"]
+    K -->|"reject / changes"| N
+    L --> N
+```
+
+## Architecture
+
+```mermaid
+flowchart TB
+    Browser["Jinja2 + HTMX + Plotly Dashboard"] --> API["FastAPI / typed DTOs"]
+    API --> App["InspectionApplicationService"]
+    App --> Graph["Single persistent LangGraph workflow"]
+    Graph --> Vision["FixtureVisionProvider / OpenAIVisionProvider"]
+    Graph --> Sensor["Rule + rolling median/MAD detector"]
+    Graph --> FM["Controlled failure-mode repository"]
+    Graph --> RAG["FAISS knowledge retriever"]
+    Graph --> Diagnosis["Fixture/OpenAI diagnosis provider"]
+    Graph --> Risk["Deterministic risk policy"]
+    Graph --> WO["Approval-guarded WorkOrder service"]
+    App --> SQLite["SQLite metadata + LangGraph checkpoints"]
+    Sensor --> CSV["Versioned synthetic CSV"]
+    RAG --> Files["Synthetic manuals + local index"]
+```
+
+## Key Features
+
+- One checkpointed LangGraph workflow with degraded routing and real `interrupt` / `Command(resume=...)` behavior.
+- Secure PNG/JPEG/WebP upload validation, generated filenames, hashes, decode checks, and path confinement.
+- Deterministic historical-window sensor analysis with data-quality reporting and anomaly segments.
+- Controlled failure-mode candidates and citation-bearing FAISS retrieval.
+- Structured diagnosis with primary/alternative candidates, supporting/contradicting evidence, missing evidence, and uncertainty.
+- Deterministic risk matrix and approval-protected, idempotent WorkOrder creation.
+- FastAPI API plus a server-rendered Dashboard requiring no Node build pipeline.
+- Offline evaluation, Ruff, Mypy, pytest, package build, repository-hygiene scan, and GitHub Actions workflow.
+
+## Evidence-driven Diagnosis
+
+Vision findings, sensor segments, and knowledge chunks become a shared `EvidenceRef` containing an evidence ID, kind, source ID, summary, and observation timestamp. Diagnosis output may cite only IDs included in its input bundle; unknown evidence or failure-mode candidates are rejected at the provider boundary. The Dashboard links diagnosis references back to visible evidence cards.
+
+## Sensor Analysis
+
+The detector combines configured operating limits with a centered rolling median/MAD robust score, data-quality validation, and contiguous segment aggregation. It analyzes a bounded offline historical CSV window; it is not a real-time streaming detector. Numerical anomaly decisions are Python code, not LLM estimates.
+
+## Vision
+
+`FixtureVisionProvider` is the default deterministic adapter. It validates versioned fixture hashes and returns explicitly synthetic findings without inspecting pixels.
+
+`OpenAIVisionProvider` reads the actual PNG/JPEG/WebP artifact, sends image bytes plus non-evaluative asset context and a finite visual-label vocabulary, and parses the response into the same `VisionAnalysisResult`. Its prompt prohibits final fault diagnosis, and the provider never receives scenario ground truth, expected failure modes, or evaluation labels.
+
+**Real Vision provider implemented but not live verified:** no usable API key was available in the final local validation environment. The opt-in three-image smoke test requires `RUN_LIVE_TESTS=1`; default pytest and CI never make paid calls.
+
+## RAG
+
+The small synthetic knowledge base contains original demo manuals and an inspection SOP. Documents are chunked with metadata, embedded by a deterministic local demo embedder, stored in FAISS, filtered by asset type, and returned with title, section, excerpt, score, and chunk ID. It is evidence retrieval, not a general industrial knowledge base.
+
+## Human-in-the-loop
+
+HIGH/CRITICAL drafts trigger a LangGraph interrupt. The persisted approval binds the immutable Draft ID and content hash. Resume records approve/reject/request-changes, while the WorkOrder service revalidates risk, decision, hash, and Draft state at the side-effect boundary.
+
+## Persistence and Idempotency
+
+- SQLite stores demo metadata, inspections, runs, drafts, approvals, WorkOrders, and independent ToolTrace attempts.
+- `langgraph-checkpoint-sqlite` persists graph state across process restart.
+- A unique Draft-to-WorkOrder relationship and stable idempotency key prevent duplicate WorkOrders.
+- CSV files keep time-series data outside graph checkpoints; FAISS and chunk metadata can be rebuilt from tracked synthetic sources.
+
+## Evaluation
+
+Run `inspection-agent evaluate` to create [evaluation/report.json](evaluation/report.json) and [evaluation/report.md](evaluation/report.md). Ground truth is opened only by the scorer after workflow execution.
+
+| Area | Measured offline result | Scope |
+| --- | ---: | --- |
+| Sensor point precision / recall / F1 | 1.0000 / 0.8917 / 0.9427 | 2 anomalous synthetic scenarios; normal reported separately |
+| Sensor segment precision / recall / F1 | 1.0000 / 1.0000 / 1.0000 | 4 injected segments |
+| Normal case | Pass | 1 scenario; no undefined positive-class F1 claim |
+| Retrieval Recall@1 / Recall@3 / MRR | 1.0000 / 1.0000 / 1.0000 | Only 4 manually defined queries |
+| Workflow task success | 3/3 | Synthetic scenario task success, not diagnosis accuracy |
+| Safety/idempotency checks | 5/5 | Approval, bypass, duplicate create, restart/resume, dual failure |
+
+These numbers are deterministic portfolio-fixture results. They are not industrial fault-diagnosis accuracy, real Vision accuracy, generalization evidence, or a production benchmark.
+
+## Testing
+
+Default tests are offline and use Fixture Vision/Diagnosis. Final local validation collected **102 tests: 101 passed and 1 opt-in live Vision test skipped**. Coverage includes schemas, seed reproducibility, sensors, retrieval, provider boundaries, workflow routing, degraded modes, approval enforcement, idempotency, restart/resume, API/upload security, templates, and three scenario flows.
+
+```bash
+ruff check .
+mypy src
+python -m pytest
+inspection-agent check-hygiene
+inspection-agent evaluate
+python -m build
+```
 
 ## Quick Start
 
 Requires Python 3.11+.
 
 ```bash
+git clone https://github.com/zhanglonglong01/multimodal-industrial-inspection-agent.git
+cd multimodal-industrial-inspection-agent
 python -m pip install -e ".[dev]"
 inspection-agent init-web-demo
 uvicorn inspection_agent.web:app --host 127.0.0.1 --port 8000
 ```
 
-Open <http://127.0.0.1:8000>. The API documentation is available at <http://127.0.0.1:8000/docs>.
+Open <http://127.0.0.1:8000>. API documentation is at <http://127.0.0.1:8000/docs>.
 
-Docker demo:
+## Docker
 
 ```bash
 docker compose up --build
 ```
 
-The container initializes the demo database, FAISS index and writable artifact directory before starting the app. SQLite/checkpoints/uploads are retained in the `inspection-runtime` volume.
+The single container seeds SQLite, rebuilds the FAISS index, creates writable runtime directories, and exposes `/health` and `/ready`. Runtime DB, checkpoints, index, and uploads use a named volume. Docker could not be run on the local Windows validation host; the GitHub Actions workflow contains Linux image build and container `/health`/`/ready` smoke checks. Do not describe Docker as CI-verified until that workflow has actually completed successfully on GitHub.
 
-## Demo Mode
+## Live Mode
 
-`APP_MODE=demo` is the default and requires no API key. It always uses:
+Copy `.env.example` to `.env` and keep secrets untracked.
 
-- synthetic assets and sensor CSVs;
-- `FixtureVisionProvider` (preset fixture findings, not pixel inference);
-- `FixtureDiagnosisProvider`;
-- synthetic maintenance documents and deterministic local embeddings.
+Real Vision with deterministic diagnosis:
 
-The three quick-start scenarios are:
+```dotenv
+APP_MODE=demo
+VISION_PROVIDER=openai
+INSPECTION_OPENAI_API_KEY=<your-key>
+INSPECTION_OPENAI_VISION_MODEL=gpt-5-mini
+```
 
-- `SCENARIO-001`: pump seal leakage → CRITICAL → approval can create a WorkOrder;
-- `SCENARIO-002`: motor bearing anomaly → HIGH → reject creates no WorkOrder;
-- `SCENARIO-003`: normal equipment → no actionable fault, draft, approval or WorkOrder.
+Enable the already implemented OpenAI diagnosis adapter as well:
 
-`APP_MODE=live` is reserved for implemented provider adapters. The current OpenAI diagnosis adapter requires `INSPECTION_OPENAI_API_KEY`; no real multimodal Vision adapter or end-to-end live configuration has been verified.
+```dotenv
+APP_MODE=live
+INSPECTION_OPENAI_DIAGNOSIS_MODEL=gpt-5-mini
+```
 
-## Screenshots
+Paid three-image smoke test:
 
-Screenshots and a final demo recording will be added after UI review. Current pages include the asset fleet, inspection setup, evidence-rich run detail, approval gate and WorkOrder detail.
+```bash
+RUN_LIVE_TESTS=1 inspection-agent evaluate-vision-live
+```
 
-## Known Limitations
+Never commit `.env`, keys, smoke responses containing sensitive data, or runtime artifacts.
 
-- Portfolio demo; **not production-ready** and not connected to a factory, PLC, SCADA or CMMS.
-- Fixture Vision does not inspect uploaded pixels. Uploaded images are validated and displayed, while demo findings come from the selected versioned fixture.
-- Synthetic scenario results do not establish accuracy on real industrial data.
-- SQLite and the synchronous workflow runtime target a single-container demonstration, not concurrent distributed execution.
-- CSRF protection uses a basic same-site double-submit strategy; there are no user accounts, OAuth, RBAC or enterprise security controls.
-- Plotly.js and HTMX are loaded from public CDNs in the current demo UI.
+## Project Structure
+
+```text
+src/inspection_agent/
+├── application.py          # Web-independent use cases
+├── workflow.py             # LangGraph nodes, routing, checkpoint runtime
+├── services/               # Vision, sensor, RAG, diagnosis, risk, WorkOrder
+├── web.py                  # FastAPI routes and HTML controllers
+├── templates/ + static/    # Jinja2/HTMX/Plotly Dashboard
+├── portfolio_evaluation.py # Unified offline report
+└── hygiene.py              # Tracked-file secret/runtime checks
+data/                       # Versioned synthetic source data and documents
+evaluation/                 # Generated committed Portfolio report
+docs/images/                # Actual demo screenshots and GIF
+tests/                      # Offline unit and integration suite
+```
+
+## API
+
+Main routes: `GET /health`, `GET /ready`, `GET /api/assets`, `GET /api/assets/{id}`, `POST /api/inspections`, `POST /api/inspections/{id}/run`, `GET /api/runs/{id}`, `POST /api/approvals/{id}/decision`, and WorkOrder list/detail endpoints. Errors use `code`, `message`, `details`, and `request_id`.
+
+## Design Decisions
+
+- **One workflow, not multiple agents:** Vision, sensor, RAG, risk, and WorkOrder remain typed services; only evidence/query synthesis needs model reasoning.
+- **SQLite/FAISS instead of PostgreSQL/Qdrant:** the fixed portfolio scope benefits from zero external services and reproducible local startup.
+- **Deterministic sensor and risk logic:** measurements, thresholds, permissions, and side effects must be testable and auditable.
+- **Fixture providers by default:** tests, CI, interviews, and demos must work without credentials, network access, cost, or nondeterministic provider output.
+- **Provider abstraction:** real Vision/Diagnosis adapters can replace fixtures without changing workflow schemas or evaluation ground truth.
+
+## Relationship to IBM AssetOpsBench
+
+The project was inspired by and researched [IBM AssetOpsBench](https://github.com/IBM/AssetOpsBench), particularly its industrial asset-operations scenarios and its treatment of IoT/time-series evidence, failure modes, work orders, tools, and evaluation.
+
+This repository is not a fork, does not copy AssetOpsBench source code or benchmark scores, and is not endorsed by IBM. AssetOpsBench focuses on an industrial-agent benchmark/evaluation framework; this project focuses on a small end-user multimodal inspection application with a Dashboard, image evidence, RAG, persistent HITL, and a protected action loop. See [the detailed analysis](docs/ASSETOPSBENCH_ANALYSIS.md).
+
+## Limitations
+
+- Only two synthetic assets, three synthetic scenarios, four manual retrieval queries, and three schematic images.
+- Fixture providers are the reproducible default; real Vision was not live-verified in the final local environment.
+- No real factory, PLC, SCADA, CMMS, streaming bus, production authentication, RBAC, or industrial safety validation.
+- Historical-window CSV analysis, not online condition monitoring.
+- SQLite and synchronous execution target a single-container demo, not concurrent distributed production.
+- Public-CDN HTMX/Plotly assets require internet access for charts in the current browser UI.
+- Synthetic evaluation demonstrates expected task behavior only; it cannot support accuracy, ROI, reliability, or generalization claims.
+
+## Roadmap
+
+Potential future work—not implemented in v1.0—includes factory-approved datasets, calibrated real-Vision evaluation, authenticated reviewers, external artifact storage, asynchronous jobs, richer observability, and an optional MCP gateway. These are roadmap items, not current features.
+
+## License
+
+Released under the [MIT License](LICENSE). Third-party projects retain their own licenses and trademarks.

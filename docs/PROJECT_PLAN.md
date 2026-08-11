@@ -1,7 +1,7 @@
 # 多模态工业设备智能巡检与故障诊断 Agent：项目计划
 
 > English name: Multimodal Industrial Inspection & Fault Diagnosis Agent  
-> 当前状态：Phase 2 已完成工程骨架、可复现 demo 数据和可独立运行的 Vision/Sensor/Failure Mode/Knowledge 分析模块；Phase 3 及之后的功能仍是计划。  
+> 当前状态：Phase 0-5 已完成，形成 Portfolio MVP 1.0.0 候选版本；尚未创建 Git tag，外部 CI、CI Docker smoke 与真实 Vision live smoke 的状态以发布门禁记录为准。
 > 项目定位：面向计算机硕士校招简历与 GitHub 展示的个人工程实践，不宣称真实工厂部署、商业效果或未经验证的准确率。
 
 ## 1. 项目背景
@@ -594,7 +594,7 @@ README 只展示通过可复现命令生成的报告，并同时注明 commit、
 - detector 对预置注入输出可验证 segment，算法参数被持久化。
 - RAG 返回的每个 chunk 可定位到文档和章节。
 
-### Phase 3：LangGraph、诊断、HITL 与工单
+### Phase 3：LangGraph、诊断、HITL 与工单（已完成）
 
 交付：
 
@@ -610,7 +610,7 @@ README 只展示通过可复现命令生成的报告，并同时注明 commit、
 - 批准后恢复同一 run 并只创建一张工单。
 - diagnosis 的 evidence IDs 全部可解析，非法引用被拒绝。
 
-### Phase 4：FastAPI、Dashboard 与 Docker Demo
+### Phase 4：FastAPI、Dashboard 与 Docker Demo（已完成）
 
 交付：
 
@@ -626,7 +626,7 @@ README 只展示通过可复现命令生成的报告，并同时注明 commit、
 - UI 明确显示 synthetic/fixture/provider 状态。
 - 重启后 workflow/approval/work order 状态可恢复。
 
-### Phase 5：Evaluation、质量与作品集发布
+### Phase 5：Evaluation、质量与作品集发布（已完成，外部门禁待验证）
 
 交付：
 

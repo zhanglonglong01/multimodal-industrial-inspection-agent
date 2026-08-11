@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
 
@@ -10,7 +9,6 @@ from inspection_agent.config import Settings
 from inspection_agent.demo import seed_demo, validate_demo
 from inspection_agent.repository import SQLiteRepository
 from inspection_agent.schemas import ScenarioManifest
-
 
 EXPECTED_ASSET_SENSORS = {
     "MOTOR-001": ["vibration", "bearing_temperature", "current"],

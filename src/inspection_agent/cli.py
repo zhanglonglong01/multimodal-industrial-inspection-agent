@@ -8,18 +8,20 @@ import logging
 import sys
 from pathlib import Path
 
-from .config import Settings
+from .application import InspectionApplicationService
+from .config import PROJECT_ROOT, Settings
 from .demo import seed_demo, validate_demo
 from .evaluation import evaluate_detector, evaluate_retrieval
+from .hygiene import assert_repository_hygiene
 from .logging_config import configure_logging, log_event
 from .phase2 import run_scenario_analysis
+from .portfolio_evaluation import run_portfolio_evaluation
 from .repository import SQLiteRepository
 from .services.knowledge import KnowledgeIndexBuilder, KnowledgeRetriever
-from .application import InspectionApplicationService
+from .vision_evaluation import run_live_vision_smoke
 from .workflow import WorkflowRuntime, build_initial_state, get_interrupt_payload
 from .workflow_evaluation import evaluate_graph_paths, evaluate_offline_scenarios
 from .workflow_schemas import ApprovalDecision, ApprovalDecisionInput
-
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +89,33 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser(
         "init-web-demo", help="Initialize demo metadata, FAISS, uploads, and web schema"
     )
+    evaluation_parser = commands.add_parser(
+        "evaluate", help="Generate the final offline Portfolio MVP evaluation reports"
+    )
+    evaluation_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("evaluation"),
+        help="Directory for report.json and report.md",
+    )
+    evaluation_parser.add_argument(
+        "--skip-tests",
+        action="store_true",
+        help="Skip the embedded pytest run (intended only when pytest already ran in CI)",
+    )
+    live_vision_parser = commands.add_parser(
+        "evaluate-vision-live",
+        help="Opt-in three-image OpenAI Vision smoke test (requires RUN_LIVE_TESTS=1)",
+    )
+    live_vision_parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("evaluation/live_vision_smoke.json"),
+    )
+    commands.add_parser(
+        "check-hygiene",
+        help="Fail if Git tracks runtime artifacts or obvious secret formats",
+    )
     return parser
 
 
@@ -98,7 +127,7 @@ def _settings_from_args(args: argparse.Namespace) -> Settings:
         overrides["database_path"] = args.database_path
     if args.log_level is not None:
         overrides["log_level"] = args.log_level
-    return Settings(**overrides)
+    return Settings.model_validate(overrides)
 
 
 def _print_json(payload: object) -> None:
@@ -198,6 +227,23 @@ def main(argv: list[str] | None = None) -> int:
                     ],
                 }
             )
+            return 0
+        if args.command == "evaluate":
+            _print_json(
+                run_portfolio_evaluation(
+                    settings,
+                    output_dir=args.output_dir,
+                    run_tests=not args.skip_tests,
+                )
+            )
+            return 0
+        if args.command == "evaluate-vision-live":
+            seed_demo(settings)
+            _print_json(run_live_vision_smoke(settings, output_path=args.output))
+            return 0
+        if args.command == "check-hygiene":
+            assert_repository_hygiene(PROJECT_ROOT)
+            _print_json({"status": "passed", "scope": "git commit candidates"})
             return 0
     except Exception as exc:
         log_event(

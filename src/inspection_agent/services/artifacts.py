@@ -14,7 +14,6 @@ from ..config import Settings
 from ..schemas import ImageFixture
 from ..web_schemas import ArtifactRecord
 
-
 ALLOWED_UPLOADS = {
     ".png": {"image/png": "PNG"},
     ".jpg": {"image/jpeg": "JPEG"},

@@ -12,7 +12,6 @@ from typing import Iterator
 from .logging_config import log_event
 from .schemas import Asset, SensorDatasetMetadata
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -86,17 +85,24 @@ class SQLiteRepository:
         assets: list[Asset],
         datasets: list[SensorDatasetMetadata],
     ) -> None:
-        """Replace only the Phase 1 demo metadata in one transaction."""
+        """Upsert the fixed demo metadata without invalidating later-phase records."""
 
         with self.connection() as connection:
-            connection.execute("DELETE FROM sensor_datasets")
-            connection.execute("DELETE FROM assets")
             connection.executemany(
                 """
                 INSERT INTO assets (
                     asset_id, schema_version, name, asset_type, site, status,
                     criticality, description, sensors_json
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(asset_id) DO UPDATE SET
+                    schema_version = excluded.schema_version,
+                    name = excluded.name,
+                    asset_type = excluded.asset_type,
+                    site = excluded.site,
+                    status = excluded.status,
+                    criticality = excluded.criticality,
+                    description = excluded.description,
+                    sensors_json = excluded.sensors_json
                 """,
                 [
                     (
@@ -125,6 +131,18 @@ class SQLiteRepository:
                     sample_interval_seconds, start_time, end_time,
                     sensor_columns_json
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(dataset_id) DO UPDATE SET
+                    schema_version = excluded.schema_version,
+                    scenario_id = excluded.scenario_id,
+                    asset_id = excluded.asset_id,
+                    relative_path = excluded.relative_path,
+                    sha256 = excluded.sha256,
+                    random_seed = excluded.random_seed,
+                    row_count = excluded.row_count,
+                    sample_interval_seconds = excluded.sample_interval_seconds,
+                    start_time = excluded.start_time,
+                    end_time = excluded.end_time,
+                    sensor_columns_json = excluded.sensor_columns_json
                 """,
                 [
                     (

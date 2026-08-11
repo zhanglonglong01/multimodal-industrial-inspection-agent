@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .analysis_schemas import VisionAnalysisResult
 from .config import Settings
 from .schemas import ScenarioManifest
 from .services.knowledge import KnowledgeIndexBuilder
@@ -14,7 +15,7 @@ from .workflow_schemas import ApprovalDecision, ApprovalDecisionInput
 class _FailingVisionProvider:
     provider_name = "failing_test_vision"
 
-    def analyze(self, artifact_id: str, asset_context: object) -> object:
+    def analyze(self, artifact_id: str, asset_context: object) -> VisionAnalysisResult:
         raise RuntimeError("injected vision failure")
 
 

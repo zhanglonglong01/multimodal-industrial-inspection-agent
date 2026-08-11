@@ -10,6 +10,7 @@ from PIL import Image
 
 from inspection_agent.application import InspectionApplicationService
 from inspection_agent.config import Settings
+from inspection_agent.demo import seed_demo
 from inspection_agent.services.knowledge import KnowledgeRetriever
 from inspection_agent.web import create_app
 from inspection_agent.workflow import WorkflowRuntime
@@ -379,3 +380,18 @@ def test_readiness_reports_asset_repository_failure(web_client, monkeypatch) -> 
         "ready": False,
         "detail": "RuntimeError",
     }
+
+
+def test_seed_remains_repeatable_after_web_records_exist(web_client) -> None:
+    client, service, settings = web_client
+    inspection = _create(
+        client,
+        "SCENARIO-003",
+        "PUMP-001",
+        "DATASET-SCENARIO-003",
+    )
+
+    seed_demo(settings)
+
+    assert service.get_inspection(inspection["inspection_id"]).asset_id == "PUMP-001"
+    assert {asset.asset_id for asset in service.list_assets()} == {"PUMP-001", "MOTOR-001"}

@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  offline-test-build-and-docker-smoke:
+    runs-on: ubuntu-latest
+    env:
+      APP_MODE: demo
+      VISION_PROVIDER: fixture
+      RUN_LIVE_TESTS: "0"
+      INSPECTION_LOG_LEVEL: WARNING
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project and quality tools
+        run: python -m pip install -e ".[dev]"
+
+      - name: Check repository hygiene
+        run: inspection-agent check-hygiene
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Static type check
+        run: mypy src
+
+      - name: Run offline tests
+        run: python -m pytest
+
+      - name: Run offline Portfolio evaluation
+        run: inspection-agent evaluate --output-dir dist/evaluation
+
+      - name: Build Python package
+        run: python -m build
+
+      - name: Build Docker image
+        run: docker build --tag inspection-agent:ci .
+
+      - name: Start Docker demo
+        run: docker run --detach --name inspection-agent-ci --publish 8000:8000 inspection-agent:ci
+
+      - name: Verify Docker health and readiness
+        run: |
+          python - <<'PY'
+          import json
+          import time
+          import urllib.error
+          import urllib.request
+
+          ready = None
+          for _ in range(40):
+              try:
+                  with urllib.request.urlopen("http://127.0.0.1:8000/ready", timeout=3) as response:
+                      ready = json.load(response)
+                  break
+              except (OSError, urllib.error.URLError):
+                  time.sleep(2)
+          if ready is None:
+              raise SystemExit("container did not become ready")
+          with urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=3) as response:
+              health = json.load(response)
+              assert response.status == 200
+          assert health["status"] == "alive"
+          assert ready["status"] == "ready"
+          assert all(item["ready"] for item in ready["checks"])
+          print(json.dumps({"health": health["status"], "ready": ready["status"]}))
+          PY
+
+      - name: Stop Docker demo
+        if: always()
+        run: docker rm --force inspection-agent-ci

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import csv
 import hashlib
-import json
 import logging
 import math
 import random
@@ -34,7 +33,6 @@ from .schemas import (
     SensorDatasetMetadata,
     SensorDefinition,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -235,7 +233,8 @@ IMAGE_FIXTURE_SPECS = (
         "fixture_id": "IMAGE-SCENARIO-001",
         "scenario_id": "SCENARIO-001",
         "asset_id": "PUMP-001",
-        "path": "demo/fixtures/images/pump_seal_leak.svg",
+        "path": "demo/fixtures/images/pump_seal_leak.png",
+        "media_type": "image/png",
         "visual_labels": ["leakage_trace"],
         "description": "Synthetic schematic showing a visible liquid trace below a pump seal.",
     },
@@ -243,15 +242,17 @@ IMAGE_FIXTURE_SPECS = (
         "fixture_id": "IMAGE-SCENARIO-002",
         "scenario_id": "SCENARIO-002",
         "asset_id": "MOTOR-001",
-        "path": "demo/fixtures/images/motor_bearing_fault.svg",
-        "visual_labels": ["bearing_discoloration"],
+        "path": "demo/fixtures/images/motor_bearing_fault.png",
+        "media_type": "image/png",
+        "visual_labels": ["discoloration"],
         "description": "Synthetic schematic highlighting discoloration around a motor bearing.",
     },
     {
         "fixture_id": "IMAGE-SCENARIO-003",
         "scenario_id": "SCENARIO-003",
         "asset_id": "PUMP-001",
-        "path": "demo/fixtures/images/pump_normal.svg",
+        "path": "demo/fixtures/images/pump_normal.png",
+        "media_type": "image/png",
         "visual_labels": ["no_visible_anomaly"],
         "description": "Synthetic schematic of a pump with no highlighted visual anomaly.",
     },
@@ -367,10 +368,7 @@ def _build_image_manifest(settings: Settings) -> ImageFixtureManifest:
         if not path.is_file():
             raise FileNotFoundError(f"missing fixture image: {path}")
         fixtures.append(
-            ImageFixture(
-                **spec,
-                sha256=_sha256_file(path),
-            )
+            ImageFixture.model_validate({**spec, "sha256": _sha256_file(path)})
         )
     manifest = ImageFixtureManifest(fixtures=fixtures)
     _write_model(settings.image_manifest_path, manifest)
@@ -607,4 +605,3 @@ def validate_demo(settings: Settings) -> DemoValidationResult:
         scenario_ids=sorted(found_ids),
         checks=checks,
     )
-

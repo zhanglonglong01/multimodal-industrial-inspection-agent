@@ -8,8 +8,7 @@ import sqlite3
 import time
 import uuid
 from datetime import UTC, datetime
-from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any, Mapping
 
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
@@ -32,7 +31,12 @@ from .services.failure_modes import FailureModeRepository
 from .services.knowledge import KnowledgeRetriever
 from .services.risk import DeterministicRiskPolicy
 from .services.sensors import RuleBasedAndMADDetector
-from .services.vision import FixtureVisionProvider, VisionProvider
+from .services.vision import (
+    FixtureVisionProvider,
+    OpenAIVisionProvider,
+    VisionProvider,
+    resolve_fixture_artifact,
+)
 from .services.work_orders import WorkOrderService
 from .workflow_repository import WorkflowRepository
 from .workflow_schemas import (
@@ -167,7 +171,14 @@ class InspectionWorkflow:
                 state,
                 node_name="validate_request",
                 tool_name="pydantic_request_validation",
-                input_summary={key: state[key] for key in required},
+                input_summary={
+                    "run_id": state["run_id"],
+                    "inspection_id": state["inspection_id"],
+                    "scenario_id": state["scenario_id"],
+                    "asset_id": state["asset_id"],
+                    "image_artifact_id": state["image_artifact_id"],
+                    "sensor_dataset_id": state["sensor_dataset_id"],
+                },
                 started=started,
             ),
         }
@@ -427,16 +438,18 @@ class InspectionWorkflow:
             if chunk is not None:
                 evidence = chunk.to_evidence_ref()
                 evidence_by_id[evidence.evidence_id] = evidence
-        evidence = list(evidence_by_id.values())
+        knowledge_items = list(evidence_by_id.values())
         return {
-            "knowledge_evidence": [item.model_dump(mode="json") for item in evidence],
+            "knowledge_evidence": [
+                item.model_dump(mode="json") for item in knowledge_items
+            ],
             "tool_trace": self._finish_trace(
                 state,
                 node_name="retrieve_knowledge",
                 tool_name="KnowledgeRetriever",
                 input_summary={"queries": state.get("retrieval_queries", [])},
                 started=started,
-                details={"evidence_ids": [item.evidence_id for item in evidence]},
+                details={"evidence_ids": [item.evidence_id for item in knowledge_items]},
             ),
         }
 
@@ -612,11 +625,15 @@ class InspectionWorkflow:
         """No side effect occurs before interrupt, because this node re-runs on resume."""
 
         started = time.perf_counter()
-        draft = self.workflow_repository.get_draft(state["work_order_draft_id"])
-        if draft is None or state.get("approval_request_id") is None:
+        draft_id = state.get("work_order_draft_id")
+        approval_id = state.get("approval_request_id")
+        if draft_id is None or approval_id is None:
             raise ValueError("approval gate requires a persistent draft and approval request")
+        draft = self.workflow_repository.get_draft(draft_id)
+        if draft is None:
+            raise ValueError("approval gate draft is missing")
         payload = {
-            "approval_id": state["approval_request_id"],
+            "approval_id": approval_id,
             "draft_id": draft.draft_id,
             "risk_level": draft.risk_level.value,
             "summary": draft.summary,
@@ -642,9 +659,10 @@ class InspectionWorkflow:
     def validate_approval(self, state: InspectionState) -> dict[str, Any]:
         started = time.perf_counter()
         decision = ApprovalDecisionInput.model_validate(state["approval_decision"])
-        approval = self.work_orders.record_decision(
-            state["approval_request_id"], decision
-        )
+        approval_id = state.get("approval_request_id")
+        if approval_id is None:
+            raise ValueError("approval request ID is required")
+        approval = self.work_orders.record_decision(approval_id, decision)
         return {
             "approval_decision": decision.model_dump(mode="json"),
             "tool_trace": self._finish_trace(
@@ -666,8 +684,11 @@ class InspectionWorkflow:
 
     def create_work_order(self, state: InspectionState) -> dict[str, Any]:
         started = time.perf_counter()
+        draft_id = state.get("work_order_draft_id")
+        if draft_id is None:
+            raise ValueError("work-order draft ID is required")
         work_order = self.work_orders.create_work_order(
-            draft_id=state["work_order_draft_id"],
+            draft_id=draft_id,
             approval_id=state.get("approval_request_id"),
         )
         return {
@@ -872,9 +893,19 @@ class WorkflowRuntime:
             settings.checkpoint_path, check_same_thread=False
         )
         self.checkpointer = SqliteSaver(self._checkpoint_connection)
+        selected_vision_provider = vision_provider
+        if selected_vision_provider is None:
+            selected_vision_provider = (
+                OpenAIVisionProvider(
+                    settings,
+                    lambda artifact_id: resolve_fixture_artifact(settings, artifact_id),
+                )
+                if settings.vision_provider == "openai"
+                else FixtureVisionProvider(settings)
+            )
         self.workflow = InspectionWorkflow(
             settings=settings,
-            vision_provider=vision_provider or FixtureVisionProvider(settings),
+            vision_provider=selected_vision_provider,
             sensor_service=sensor_service or RuleBasedAndMADDetector(),
             failure_modes=FailureModeRepository(settings.failure_modes_path),
             retriever=retriever or KnowledgeRetriever(settings.knowledge_index_dir),

@@ -9,7 +9,6 @@ from typing import Literal
 from pydantic import AliasChoices, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -21,6 +20,10 @@ class Settings(BaseSettings):
         default="demo",
         validation_alias=AliasChoices("APP_MODE", "INSPECTION_APP_MODE"),
     )
+    vision_provider: Literal["fixture", "openai"] = Field(
+        default="fixture",
+        validation_alias=AliasChoices("VISION_PROVIDER", "INSPECTION_VISION_PROVIDER"),
+    )
     app_env: Literal["development", "test", "production"] = "development"
     log_level: str = "INFO"
     data_dir: Path = Field(default=PROJECT_ROOT / "data")
@@ -29,6 +32,7 @@ class Settings(BaseSettings):
     random_seed: int = 20_260_811
     openai_api_key: SecretStr | None = None
     openai_diagnosis_model: str = "gpt-5-mini"
+    openai_vision_model: str = "gpt-5-mini"
     max_upload_bytes: int = 5 * 1024 * 1024
 
     model_config = SettingsConfigDict(

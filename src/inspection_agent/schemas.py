@@ -9,7 +9,6 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-
 Sha256 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 
 
@@ -160,7 +159,7 @@ class ImageFixture(StrictModel):
     scenario_id: str = Field(pattern=r"^SCENARIO-[0-9]{3}$")
     asset_id: str = Field(pattern=r"^[A-Z]+-[0-9]{3}$")
     path: str
-    media_type: str = "image/svg+xml"
+    media_type: str = "image/png"
     sha256: Sha256
     synthetic: bool = True
     fixture_only: bool = True
@@ -233,4 +232,3 @@ class DemoValidationResult(StrictModel):
     valid: bool
     scenario_ids: list[str]
     checks: list[str]
-

@@ -6,9 +6,9 @@
       "fixture_id": "IMAGE-SCENARIO-001",
       "scenario_id": "SCENARIO-001",
       "asset_id": "PUMP-001",
-      "path": "demo/fixtures/images/pump_seal_leak.svg",
-      "media_type": "image/svg+xml",
-      "sha256": "ec4b839ad200da8247031d438d781f233be83b96a953163a3433a8dad7a6ec71",
+      "path": "demo/fixtures/images/pump_seal_leak.png",
+      "media_type": "image/png",
+      "sha256": "338132472a40d4caa2a9f33377c755fd6286ecc1bc4d0d4a3ae4d1ebf6a4a3d0",
       "synthetic": true,
       "fixture_only": true,
       "visual_labels": [
@@ -20,13 +20,13 @@
       "fixture_id": "IMAGE-SCENARIO-002",
       "scenario_id": "SCENARIO-002",
       "asset_id": "MOTOR-001",
-      "path": "demo/fixtures/images/motor_bearing_fault.svg",
-      "media_type": "image/svg+xml",
-      "sha256": "844c1ffe3ebecb008188fb8bc3eeed5092786f9ca17edd060637199866a11213",
+      "path": "demo/fixtures/images/motor_bearing_fault.png",
+      "media_type": "image/png",
+      "sha256": "9535278509de8af3457ad3a8655af4b4f68e0924cc2a4cca55d5dc7bb2fde663",
       "synthetic": true,
       "fixture_only": true,
       "visual_labels": [
-        "bearing_discoloration"
+        "discoloration"
       ],
       "description": "Synthetic schematic highlighting discoloration around a motor bearing."
     },
@@ -34,9 +34,9 @@
       "fixture_id": "IMAGE-SCENARIO-003",
       "scenario_id": "SCENARIO-003",
       "asset_id": "PUMP-001",
-      "path": "demo/fixtures/images/pump_normal.svg",
-      "media_type": "image/svg+xml",
-      "sha256": "6b2b887fc4089fb6898cb0160222e4ccae2bc415a7884afb5a95d83f2d51bb1f",
+      "path": "demo/fixtures/images/pump_normal.png",
+      "media_type": "image/png",
+      "sha256": "93f2254681d918cbf207dc1c8fa5ebf1973e9305a8af209af3e1182007da5ad9",
       "synthetic": true,
       "fixture_only": true,
       "visual_labels": [

@@ -19,6 +19,7 @@ from .schemas import Asset, ImageFixture, ImageFixtureManifest
 from .services.artifacts import ArtifactValidationError, ImageArtifactService
 from .services.diagnosis import OpenAIDiagnosisProvider
 from .services.knowledge import KnowledgeIndexBuilder, KnowledgeRetriever
+from .services.vision import FixtureVisionProvider, OpenAIVisionProvider
 from .web_repository import WebRepository
 from .web_schemas import (
     ArtifactRecord,
@@ -176,9 +177,11 @@ class InspectionApplicationService:
                 run_id=run_id,
                 inspection_id=inspection.inspection_id,
             )
-            # Demo vision intentionally uses the registered fixture while the uploaded
-            # artifact remains available for visual display and later live providers.
-            state["image_artifact_id"] = inspection.vision_fixture_id
+            state["image_artifact_id"] = (
+                inspection.vision_fixture_id
+                if self.settings.vision_provider == "fixture"
+                else inspection.image_artifact_id
+            )
             result = runtime.invoke(state)
             return self._save_result(record, result)
         except Exception as exc:
@@ -251,6 +254,8 @@ class InspectionApplicationService:
             vision_summary=VisionSummary(
                 available=vision is not None,
                 provider=vision.get("provider") if vision else None,
+                model=vision.get("model") if vision else None,
+                latency_ms=vision.get("latency_ms") if vision else None,
                 fixture=bool(vision and vision.get("fixture")),
                 findings=vision.get("findings", []) if vision else [],
             ),
@@ -383,13 +388,23 @@ class InspectionApplicationService:
             return self._runtime_factory()
         if self._retriever is None:
             self._retriever = KnowledgeRetriever(self.settings.knowledge_index_dir)
+        vision_provider = (
+            OpenAIVisionProvider(self.settings, self.get_artifact_path)
+            if self.settings.vision_provider == "openai"
+            else FixtureVisionProvider(self.settings)
+        )
         if self.settings.app_mode == "live":
             return WorkflowRuntime(
                 self.settings,
+                vision_provider=vision_provider,
                 diagnosis_provider=OpenAIDiagnosisProvider(self.settings),
                 retriever=self._retriever,
             )
-        return WorkflowRuntime(self.settings, retriever=self._retriever)
+        return WorkflowRuntime(
+            self.settings,
+            vision_provider=vision_provider,
+            retriever=self._retriever,
+        )
 
     def _save_result(self, prior: RunRecord, result: dict[str, Any]) -> RunRecord:
         interrupt_payload = get_interrupt_payload(result)

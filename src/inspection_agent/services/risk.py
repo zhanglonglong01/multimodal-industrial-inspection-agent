@@ -11,7 +11,6 @@ from ..workflow_schemas import (
     RiskLevel,
 )
 
-
 _SEVERITY_ORDER = {
     Severity.INFO: 0,
     Severity.LOW: 1,
@@ -46,8 +45,6 @@ class DeterministicRiskPolicy:
     version = "risk-policy-1.0"
 
     def assess(self, inputs: RiskInputs) -> RiskAssessment:
-        fault_score = _SEVERITY_ORDER[inputs.fault_severity]
-        sensor_score = _SEVERITY_ORDER[inputs.sensor_severity]
         combined_severity = max(
             (inputs.fault_severity, inputs.sensor_severity),
             key=_SEVERITY_ORDER.__getitem__,
