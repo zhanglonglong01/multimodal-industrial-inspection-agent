@@ -6,7 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,18 +14,17 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
-    """Phase 1 settings.
-
-    All paths become absolute and default to locations inside the repository.
-    No provider credentials are defined until a later phase actually needs them.
-    """
+    """Environment-backed settings with absolute local persistence paths."""
 
     app_name: str = "Multimodal Industrial Inspection Agent"
     app_env: Literal["development", "test", "production"] = "development"
     log_level: str = "INFO"
     data_dir: Path = Field(default=PROJECT_ROOT / "data")
     database_path: Path | None = None
+    checkpoint_path: Path | None = None
     random_seed: int = 20_260_811
+    openai_api_key: SecretStr | None = None
+    openai_diagnosis_model: str = "gpt-5-mini"
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",
@@ -50,6 +49,11 @@ class Settings(BaseSettings):
             raise ValueError("random_seed must be non-negative")
         return value
 
+    @field_validator("openai_api_key", mode="before")
+    @classmethod
+    def blank_api_key_is_unset(cls, value: object) -> object:
+        return None if value == "" else value
+
     @model_validator(mode="after")
     def resolve_paths(self) -> "Settings":
         if not self.data_dir.is_absolute():
@@ -63,6 +67,13 @@ class Settings(BaseSettings):
             self.database_path = (PROJECT_ROOT / self.database_path).resolve()
         else:
             self.database_path = self.database_path.resolve()
+
+        if self.checkpoint_path is None:
+            self.checkpoint_path = self.data_dir / "runtime" / "langgraph_checkpoints.db"
+        elif not self.checkpoint_path.is_absolute():
+            self.checkpoint_path = (PROJECT_ROOT / self.checkpoint_path).resolve()
+        else:
+            self.checkpoint_path = self.checkpoint_path.resolve()
         return self
 
     @property
@@ -99,7 +110,9 @@ class Settings(BaseSettings):
 
     def ensure_directories(self) -> None:
         assert self.database_path is not None
+        assert self.checkpoint_path is not None
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
+        self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         self.scenarios_dir.mkdir(parents=True, exist_ok=True)
         self.fixtures_dir.mkdir(parents=True, exist_ok=True)
 

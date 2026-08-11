@@ -16,7 +16,8 @@ from ..analysis_schemas import (
     VisionLabel,
 )
 from ..config import Settings
-from ..schemas import Asset, ImageFixture, ImageFixtureManifest, ScenarioManifest
+from ..repository import SQLiteRepository
+from ..schemas import Asset, ImageFixture, ImageFixtureManifest
 
 
 @runtime_checkable
@@ -121,7 +122,15 @@ class FixtureVisionProvider:
             raise ValueError(
                 f"fixture has no declared analysis data: {fixture.scenario_id}"
             )
-        scenario = self._load_scenario(fixture.scenario_id)
+        if self.settings.database_path is None:
+            raise ValueError("database path is required for fixture timestamps")
+        dataset = SQLiteRepository(self.settings.database_path).get_sensor_dataset(
+            fixture.scenario_id
+        )
+        if dataset is None:
+            raise ValueError(
+                f"fixture scenario is not seeded: {fixture.scenario_id}"
+            )
         finding_id = f"FINDING-{artifact_id}-001"
         finding = VisionFinding(
             finding_id=finding_id,
@@ -131,7 +140,7 @@ class FixtureVisionProvider:
             confidence=1.0,
             region=spec["region"],
             evidence_id=f"EVIDENCE-VISION-{finding_id}",
-            observed_at=scenario.sensor_data.start_time,
+            observed_at=dataset.start_time,
         )
         return VisionAnalysisResult(
             artifact_id=artifact_id,
@@ -155,12 +164,6 @@ class FixtureVisionProvider:
         if not path.is_file():
             raise FileNotFoundError(f"fixture image manifest not found: {path}")
         return ImageFixtureManifest.model_validate_json(path.read_text(encoding="utf-8"))
-
-    def _load_scenario(self, scenario_id: str) -> ScenarioManifest:
-        path = self.settings.scenarios_dir / scenario_id / "manifest.json"
-        if not path.is_file():
-            raise FileNotFoundError(f"scenario manifest not found: {path}")
-        return ScenarioManifest.model_validate_json(path.read_text(encoding="utf-8"))
 
     def _validate_fixture_file(self, fixture: ImageFixture) -> None:
         path = self.settings.data_dir / fixture.path

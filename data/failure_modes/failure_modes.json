@@ -6,6 +6,7 @@
       "mode_id": "pump_seal_leakage",
       "asset_type": "pump",
       "name": "Pump seal leakage",
+      "fault_severity": "high",
       "description": "Synthetic failure mode representing loss of containment near the pump seal.",
       "symptoms": [
         "Visible liquid trace near the seal area",
@@ -29,6 +30,7 @@
       "mode_id": "motor_bearing_fault",
       "asset_type": "motor",
       "name": "Motor bearing fault",
+      "fault_severity": "high",
       "description": "Synthetic failure mode representing a localized motor bearing condition.",
       "symptoms": [
         "Discoloration around the bearing housing",

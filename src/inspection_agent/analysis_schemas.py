@@ -261,6 +261,7 @@ class FailureMode(StrictModel):
     mode_id: str = Field(pattern=r"^[a-z][a-z0-9_]*$")
     asset_type: AssetType
     name: str = Field(min_length=1)
+    fault_severity: Severity
     description: str = Field(min_length=1)
     symptoms: list[str] = Field(min_length=1)
     visual_labels: list[VisionLabel]

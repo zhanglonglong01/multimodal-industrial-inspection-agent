@@ -15,6 +15,9 @@ from .logging_config import configure_logging, log_event
 from .phase2 import run_scenario_analysis
 from .repository import SQLiteRepository
 from .services.knowledge import KnowledgeIndexBuilder, KnowledgeRetriever
+from .workflow import WorkflowRuntime, build_initial_state, get_interrupt_payload
+from .workflow_evaluation import evaluate_graph_paths, evaluate_offline_scenarios
+from .workflow_schemas import ApprovalDecision, ApprovalDecisionInput
 
 
 logger = logging.getLogger(__name__)
@@ -23,7 +26,7 @@ logger = logging.getLogger(__name__)
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="inspection-agent",
-        description="Deterministic Phase 1 data and Phase 2 analysis commands.",
+        description="Local demo data, analysis, and Phase 3 workflow commands.",
     )
     parser.add_argument("--data-dir", type=Path, help="Override INSPECTION_DATA_DIR")
     parser.add_argument(
@@ -53,6 +56,32 @@ def build_parser() -> argparse.ArgumentParser:
     scenario_parser.add_argument(
         "scenario_id",
         choices=("SCENARIO-001", "SCENARIO-002", "SCENARIO-003"),
+    )
+    workflow_parser = commands.add_parser(
+        "run-workflow", help="Run one fixture scenario through the LangGraph workflow"
+    )
+    workflow_parser.add_argument(
+        "scenario_id",
+        choices=("SCENARIO-001", "SCENARIO-002", "SCENARIO-003"),
+    )
+    workflow_parser.add_argument(
+        "--decision",
+        choices=("approve", "reject", "request_changes"),
+        help="Resume a high-risk interrupt in the same process",
+    )
+    resume_parser = commands.add_parser(
+        "resume-workflow", help="Resume a checkpointed approval in a rebuilt process"
+    )
+    resume_parser.add_argument("run_id")
+    resume_parser.add_argument(
+        "decision", choices=("approve", "reject", "request_changes")
+    )
+    resume_parser.add_argument("--comment")
+    commands.add_parser(
+        "evaluate-graph", help="Exercise eight deterministic graph routing cases"
+    )
+    commands.add_parser(
+        "evaluate-workflow", help="Score all three workflows after execution"
     )
     return parser
 
@@ -110,6 +139,48 @@ def main(argv: list[str] | None = None) -> int:
             KnowledgeIndexBuilder(settings).build()
             retriever = KnowledgeRetriever(settings.knowledge_index_dir)
             _print_json(run_scenario_analysis(settings, args.scenario_id, retriever))
+            return 0
+        if args.command == "run-workflow":
+            KnowledgeIndexBuilder(settings).build()
+            with WorkflowRuntime(settings) as runtime:
+                state = build_initial_state(settings, args.scenario_id)
+                result = runtime.invoke(state)
+                interrupt_payload = get_interrupt_payload(result)
+                if interrupt_payload is not None and args.decision:
+                    decision = ApprovalDecisionInput(
+                        decision=ApprovalDecision(args.decision.upper())
+                    )
+                    result = runtime.resume(state["run_id"], decision)
+                    interrupt_payload = get_interrupt_payload(result)
+                serializable = {
+                    key: value for key, value in result.items() if key != "__interrupt__"
+                }
+                if interrupt_payload is not None:
+                    serializable["interrupt_payload"] = interrupt_payload
+                _print_json(serializable)
+            return 0
+        if args.command == "resume-workflow":
+            with WorkflowRuntime(settings) as runtime:
+                result = runtime.resume(
+                    args.run_id,
+                    ApprovalDecisionInput(
+                        decision=ApprovalDecision(args.decision.upper()),
+                        comment=args.comment,
+                    ),
+                )
+                _print_json(
+                    {
+                        key: value
+                        for key, value in result.items()
+                        if key != "__interrupt__"
+                    }
+                )
+            return 0
+        if args.command == "evaluate-graph":
+            _print_json(evaluate_graph_paths(settings))
+            return 0
+        if args.command == "evaluate-workflow":
+            _print_json(evaluate_offline_scenarios(settings))
             return 0
     except Exception as exc:
         log_event(
