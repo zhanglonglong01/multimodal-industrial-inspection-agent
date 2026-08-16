@@ -29,6 +29,9 @@ jobs:
       - name: Check repository hygiene
         run: inspection-agent check-hygiene
 
+      - name: Validate committed MetroPT-3 real sensor profile
+        run: inspection-agent validate-metropt3
+
       - name: Lint
         run: ruff check .
 
@@ -40,6 +43,9 @@ jobs:
 
       - name: Run offline Portfolio evaluation
         run: inspection-agent evaluate --output-dir dist/evaluation
+
+      - name: Run offline MetroPT-3 event-window evaluation
+        run: inspection-agent evaluate-metropt3 --output-dir dist/metropt3-evaluation
 
       - name: Build Python package
         run: python -m build

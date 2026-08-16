@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0",
+  "profile_id": "metropt3-real-sensor-v1",
+  "real_world_operational_data": true,
+  "factory_production_line_data": false,
+  "multimodal": false,
+  "asset_id": "APU-001",
+  "source": {
+    "title": "MetroPT-3 Dataset",
+    "doi": "10.24432/C5VW3R",
+    "uci_url": "https://archive.ics.uci.edu/dataset/791/metropt%2B3%2B",
+    "download_url": "https://archive.ics.uci.edu/static/public/791/metropt%2B3%2Bdataset.zip",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "archive_sha256": "aab991a970e58210de853bb8078ce0e63abb4d9412fdc5c79792dae3d8e1721a",
+    "csv_member": "MetroPT3(AirCompressor).csv",
+    "csv_sha256": "db30ccb4ea402e3c8bf2c99db06e288d4f2a772f6928f9dbe26a920d69793e24",
+    "retrieved_on": "2026-08-16",
+    "observed_row_count": 1516948,
+    "observed_first_timestamp": "2020-02-01T00:00:00",
+    "observed_last_timestamp": "2020-09-01T03:59:50",
+    "dominant_observed_interval_seconds": 10,
+    "source_timestamp_timezone": "not provided",
+    "timestamp_normalization": "Source timestamps have no timezone. Their clock values are preserved and encoded with +00:00 solely to satisfy the application's timezone-aware storage contract; this does not assert that the source clock was UTC."
+  },
+  "failure_events": [
+    {
+      "event_id": "METROPT3-EVENT-01",
+      "source_report_number": "#1",
+      "start_time_source": "2020-04-18T00:00:00",
+      "end_time_source": "2020-04-18T23:59:00",
+      "failure": "Air leak",
+      "severity": "High stress",
+      "report_note": null
+    },
+    {
+      "event_id": "METROPT3-EVENT-02",
+      "source_report_number": "#1",
+      "start_time_source": "2020-05-29T23:30:00",
+      "end_time_source": "2020-05-30T06:00:00",
+      "failure": "Air leak",
+      "severity": "High stress",
+      "report_note": "Maintenance on 30 Apr at 12:00 (transcribed as published)."
+    },
+    {
+      "event_id": "METROPT3-EVENT-03",
+      "source_report_number": "#3",
+      "start_time_source": "2020-06-05T10:00:00",
+      "end_time_source": "2020-06-07T14:30:00",
+      "failure": "Air leak",
+      "severity": "High stress",
+      "report_note": "Maintenance on 8 Jun at 16:00."
+    },
+    {
+      "event_id": "METROPT3-EVENT-04",
+      "source_report_number": "#4",
+      "start_time_source": "2020-07-15T14:30:00",
+      "end_time_source": "2020-07-15T19:00:00",
+      "failure": "Air leak",
+      "severity": "High stress",
+      "report_note": "Maintenance on 16 Jul at 00:00."
+    }
+  ],
+  "windows": [
+    {
+      "window_id": "METROPT3-REFERENCE-20200410",
+      "path": "windows/reference_20200410_0100_0700.csv",
+      "sha256": "47c8bc9a8b81fc0efd565ac1f61d7670a94003c65b9da581cf6e31a53071463e",
+      "source_start": "2020-04-10T01:00:00",
+      "source_end_exclusive": "2020-04-10T07:00:00",
+      "normalized_start": "2020-04-10T01:00:00Z",
+      "normalized_end_exclusive": "2020-04-10T07:00:00Z",
+      "sample_interval_seconds": 60,
+      "row_count": 360,
+      "source_row_count": 2179,
+      "source_columns": [
+        "TP2",
+        "TP3",
+        "Oil_temperature",
+        "Motor_current"
+      ],
+      "sensor_columns": [
+        "compressor_pressure",
+        "pneumatic_panel_pressure",
+        "oil_temperature",
+        "motor_current"
+      ],
+      "aggregation": "one-minute arithmetic mean",
+      "report_relation": "outside_reported_failure",
+      "failure_event_id": null
+    },
+    {
+      "window_id": "METROPT3-AIR-LEAK-20200418",
+      "path": "windows/air_leak_20200418_0100_0700.csv",
+      "sha256": "b15476457bfb1c6b334499c7062d153e445f7e14bd00b6f715f2a472c91dc688",
+      "source_start": "2020-04-18T01:00:00",
+      "source_end_exclusive": "2020-04-18T07:00:00",
+      "normalized_start": "2020-04-18T01:00:00Z",
+      "normalized_end_exclusive": "2020-04-18T07:00:00Z",
+      "sample_interval_seconds": 60,
+      "row_count": 360,
+      "source_row_count": 2180,
+      "source_columns": [
+        "TP2",
+        "TP3",
+        "Oil_temperature",
+        "Motor_current"
+      ],
+      "sensor_columns": [
+        "compressor_pressure",
+        "pneumatic_panel_pressure",
+        "oil_temperature",
+        "motor_current"
+      ],
+      "aggregation": "one-minute arithmetic mean",
+      "report_relation": "within_reported_failure",
+      "failure_event_id": "METROPT3-EVENT-01"
+    }
+  ],
+  "limitations": [
+    "The source is real operational railway APU data, not factory production-line data.",
+    "MetroPT-3 contains no synchronized inspection images or maintenance manuals.",
+    "Failure reports provide event windows, not point-level sensor anomaly labels.",
+    "A window outside published reports is not guaranteed to be healthy.",
+    "One-minute aggregation is a project preprocessing choice, not part of the source dataset."
+  ]
+}

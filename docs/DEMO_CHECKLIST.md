@@ -1,6 +1,6 @@
 # Portfolio MVP Demo Checklist
 
-本清单用于每次公开演示或发布前复核。所有结果必须来自 synthetic/demo 数据；不要在录屏、终端或浏览器中显示 `.env`、API Key、真实用户信息或本地隐私路径。
+本清单用于每次公开演示或发布前复核。Web 多模态演示结果来自 synthetic/demo 数据；MetroPT-3 仅作为单独标注来源的真实传感器 profile。不要在录屏、终端或浏览器中显示 `.env`、API Key、真实用户信息或本地隐私路径。
 
 ## 1. Fresh install and startup
 
@@ -51,6 +51,8 @@
 - [x] `mypy src`。
 - [x] `python -m pytest`。
 - [x] `inspection-agent evaluate` 生成 JSON 和 Markdown 报告。
+- [x] `inspection-agent validate-metropt3` 验证 DOI、许可、源哈希和两个派生窗口。
+- [x] `inspection-agent evaluate-metropt3` 输出真实传感器事件窗口报告，且不报告 point-level F1。
 - [x] `inspection-agent check-hygiene`。
 - [x] `python -m build`。
 - [x] `git diff --check`。

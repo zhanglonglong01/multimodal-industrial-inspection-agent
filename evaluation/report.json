@@ -1,9 +1,9 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "metadata": {
-    "commit_sha": "a1d7270",
+    "commit_sha": "75acfcc",
     "git_dirty": true,
-    "timestamp": "2026-08-11T01:40:42.292720+00:00",
+    "timestamp": "2026-08-16T15:29:45.439577+00:00",
     "app_mode": "demo",
     "vision_provider": "fixture",
     "diagnosis_provider": "fixture_diagnosis",
@@ -104,6 +104,67 @@
       }
     ],
     "normal_case_reporting": "Normal-case pass; undefined positive-class F1 is not reported."
+  },
+  "real_sensor": {
+    "schema_version": "1.0",
+    "metric_name": "Real operational sensor event-window analysis",
+    "source_doi": "10.24432/C5VW3R",
+    "license": "CC BY 4.0",
+    "profile_id": "metropt3-real-sensor-v1",
+    "detector": "rule_based_and_rolling_mad",
+    "parameters": {
+      "window_size": 97,
+      "min_periods": 25,
+      "window_alignment": "centered",
+      "robust_z_constant": 0.6745,
+      "mad_threshold": 3.5,
+      "mad_zero_fallback_score": 4.5,
+      "min_segment_points": 2,
+      "max_gap_intervals": 1,
+      "medium_score_threshold": 8.0,
+      "high_score_threshold": 12.0
+    },
+    "window_count": 2,
+    "windows": [
+      {
+        "window_id": "METROPT3-REFERENCE-20200410",
+        "report_relation": "outside_reported_failure",
+        "failure_event_id": null,
+        "row_count": 360,
+        "data_quality_usable": true,
+        "anomaly_point_count": 170,
+        "anomaly_segment_count": 25,
+        "alerted_sensor_ids": [
+          "compressor_pressure",
+          "motor_current"
+        ],
+        "alerted_timestamp_count": 131,
+        "alert_timestamp_rate": 0.3638888888888889,
+        "reported_failure_window_alert_present": null
+      },
+      {
+        "window_id": "METROPT3-AIR-LEAK-20200418",
+        "report_relation": "within_reported_failure",
+        "failure_event_id": "METROPT3-EVENT-01",
+        "row_count": 360,
+        "data_quality_usable": true,
+        "anomaly_point_count": 3,
+        "anomaly_segment_count": 1,
+        "alerted_sensor_ids": [
+          "pneumatic_panel_pressure"
+        ],
+        "alerted_timestamp_count": 3,
+        "alert_timestamp_rate": 0.008333333333333333,
+        "reported_failure_window_alert_present": true
+      }
+    ],
+    "limitations": [
+      "No point-level precision, recall, or F1 is reported because MetroPT-3 provides event reports rather than point labels.",
+      "The outside-report window is a reference window, not verified healthy ground truth.",
+      "Alerts can reflect normal compressor operating-state transitions.",
+      "Configured operating ranges are analysis guardrails, not validated manufacturer limits.",
+      "The selected profile contains real sensors only; Vision, RAG, diagnosis, and WorkOrder remain synthetic-demo capabilities."
+    ]
   },
   "retrieval": {
     "query_count": 4,
@@ -293,23 +354,25 @@
     }
   },
   "tests": {
-    "collected": 102,
-    "passed": 101,
+    "collected": 105,
+    "passed": 104,
     "failed": 0,
     "skipped": 1,
     "errors": 0,
-    "duration_ms": 13061.454699840397,
+    "duration_ms": 26233.125500002643,
     "command": "python -m pytest -q"
   },
   "operational": {
-    "sensor_evaluation_ms": 45.70889985188842,
-    "retrieval_evaluation_ms": 7.0403998252004385,
-    "workflow_evaluation_ms": 449.41380014643073,
-    "graph_path_evaluation_ms": 1066.2724999710917,
-    "safety_evaluation_ms": 210.66699991934001
+    "sensor_evaluation_ms": 48.1473000254482,
+    "retrieval_evaluation_ms": 9.474000020418316,
+    "workflow_evaluation_ms": 566.0744000051636,
+    "graph_path_evaluation_ms": 1281.2924000027124,
+    "safety_evaluation_ms": 251.25570001546293,
+    "real_sensor_evaluation_ms": 82.86249998491257
   },
   "limitations": [
-    "Three synthetic scenarios only; results are Portfolio evaluation scenario outcomes.",
+    "The end-to-end workflow evaluation still contains three synthetic scenarios only.",
+    "MetroPT-3 contributes two real operational sensor windows, not a real multimodal workflow.",
     "Four manually defined retrieval queries only.",
     "Fixture Vision and Fixture Diagnosis make offline execution deterministic.",
     "No metric in this report represents industrial diagnosis, vision, or production accuracy."

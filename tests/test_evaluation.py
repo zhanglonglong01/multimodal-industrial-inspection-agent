@@ -58,6 +58,8 @@ def test_portfolio_evaluation_writes_truthful_offline_reports(
     assert report["retrieval"]["query_count"] == 4
     assert report["workflow"]["scenario_pass_rate"] == 1.0
     assert report["safety"]["all_passed"] is True
+    assert report["real_sensor"]["profile_id"] == "metropt3-real-sensor-v1"
+    assert report["real_sensor"]["window_count"] == 2
     normal = next(
         item for item in report["sensor"]["scenarios"]
         if item["scenario_id"] == "SCENARIO-003"

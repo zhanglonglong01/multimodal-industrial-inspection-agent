@@ -16,6 +16,7 @@ from typing import Any
 from .config import PROJECT_ROOT, Settings
 from .demo import seed_demo
 from .evaluation import evaluate_detector, evaluate_retrieval
+from .metropt3 import measured_metropt3_evaluation
 from .repository import SQLiteRepository
 from .services.knowledge import KnowledgeIndexBuilder, KnowledgeRetriever
 from .services.work_orders import WorkOrderService
@@ -88,6 +89,7 @@ def _isolated_settings(source: Settings, temporary_root: Path) -> Settings:
         Path("knowledge"),
         Path("failure_modes"),
         Path("evaluation"),
+        Path("real") / "metropt3",
     ):
         shutil.copytree(source.data_dir / relative, data_dir / relative)
     settings = Settings(
@@ -285,10 +287,11 @@ def run_portfolio_evaluation(
         workflow, workflow_ms = _timed(lambda: evaluate_offline_scenarios(isolated))
         graph, graph_ms = _timed(lambda: evaluate_graph_paths(isolated))
         safety, safety_ms = _timed(lambda: _safety_section(isolated, graph))
+        real_sensor, real_sensor_ms = measured_metropt3_evaluation(isolated)
         versions = _versions(isolated)
 
     report = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "metadata": {
             "commit_sha": commit_sha,
             "git_dirty": dirty,
@@ -300,6 +303,7 @@ def run_portfolio_evaluation(
             "scenario_count": 3,
         },
         "sensor": _sensor_section(sensor),
+        "real_sensor": real_sensor.model_dump(mode="json"),
         "retrieval": {
             **retrieval.model_dump(mode="json"),
             "scope_note": "Only 4 manually defined retrieval queries.",
@@ -313,9 +317,11 @@ def run_portfolio_evaluation(
             "workflow_evaluation_ms": workflow_ms,
             "graph_path_evaluation_ms": graph_ms,
             "safety_evaluation_ms": safety_ms,
+            "real_sensor_evaluation_ms": real_sensor_ms,
         },
         "limitations": [
-            "Three synthetic scenarios only; results are Portfolio evaluation scenario outcomes.",
+            "The end-to-end workflow evaluation still contains three synthetic scenarios only.",
+            "MetroPT-3 contributes two real operational sensor windows, not a real multimodal workflow.",
             "Four manually defined retrieval queries only.",
             "Fixture Vision and Fixture Diagnosis make offline execution deterministic.",
             "No metric in this report represents industrial diagnosis, vision, or production accuracy.",
@@ -341,6 +347,7 @@ def _metric_row(name: str, values: dict[str, Any]) -> str:
 def _render_markdown(report: dict[str, Any]) -> str:
     metadata = report["metadata"]
     sensor = report["sensor"]
+    real_sensor = report["real_sensor"]
     retrieval = report["retrieval"]
     workflow = report["workflow"]
     safety = report["safety"]
@@ -348,7 +355,7 @@ def _render_markdown(report: dict[str, Any]) -> str:
     lines = [
         "# Portfolio MVP Evaluation Report",
         "",
-        "> Synthetic scenario task success report; not industrial accuracy or factory validation.",
+        "> Synthetic end-to-end task evaluation plus real sensor event-window analysis; not industrial accuracy or factory validation.",
         "",
         "## Run Metadata",
         "",
@@ -366,21 +373,40 @@ def _render_markdown(report: dict[str, Any]) -> str:
         "",
         "Normal scenario: **Normal-case pass** (no expected or predicted anomaly points/segments); positive-class F1 is not reported.",
         "",
-        "## Retrieval Evaluation",
+        "## Real Sensor Event-Window Analysis",
         "",
-        f"Only **{retrieval['query_count']} manually defined retrieval queries**.",
+        "MetroPT-3 is real operational railway APU data. It has company failure-event reports, not point-level anomaly labels, so precision/recall/F1 are not reported.",
         "",
-        "| Recall@1 | Recall@3 | MRR |",
-        "| ---: | ---: | ---: |",
-        f"| {retrieval['recall_at_1']:.4f} | {retrieval['recall_at_3']:.4f} | {retrieval['mrr']:.4f} |",
-        "",
-        "## Workflow Evaluation",
-        "",
-        f"Synthetic scenario task success: **{workflow['passed_count']}/{workflow['scenario_count']} ({workflow['scenario_pass_rate']:.1%})**.",
-        "",
-        "| Scenario | Candidate | Evidence | Interrupt | WorkOrder side effect | Pass |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "| Window | Relation | Alerted timestamps | Alert rate | Alerted sensors |",
+        "| --- | --- | ---: | ---: | --- |",
     ]
+    for item in real_sensor["windows"]:
+        lines.append(
+            f"| {item['window_id']} | {item['report_relation']} | "
+            f"{item['alerted_timestamp_count']} | {item['alert_timestamp_rate']:.2%} | "
+            f"{', '.join(item['alerted_sensor_ids']) or 'none'} |"
+        )
+    lines.extend(
+        [
+            "",
+            "The outside-report reference window is not verified healthy. Its higher alert rate demonstrates that the synthetic-demo detector is not calibrated for MetroPT-3 operating-state transitions.",
+            "",
+            "## Retrieval Evaluation",
+            "",
+            f"Only **{retrieval['query_count']} manually defined retrieval queries**.",
+            "",
+            "| Recall@1 | Recall@3 | MRR |",
+            "| ---: | ---: | ---: |",
+            f"| {retrieval['recall_at_1']:.4f} | {retrieval['recall_at_3']:.4f} | {retrieval['mrr']:.4f} |",
+            "",
+            "## Workflow Evaluation",
+            "",
+            f"Synthetic scenario task success: **{workflow['passed_count']}/{workflow['scenario_count']} ({workflow['scenario_pass_rate']:.1%})**.",
+            "",
+            "| Scenario | Candidate | Evidence | Interrupt | WorkOrder side effect | Pass |",
+            "| --- | --- | --- | --- | --- | --- |",
+        ]
+    )
     for item in workflow["scenarios"]:
         lines.append(
             f"| {item['scenario_id']} | {item['failure_mode_match']} | "

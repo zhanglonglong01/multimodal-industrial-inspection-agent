@@ -1,7 +1,7 @@
 # 多模态工业设备智能巡检与故障诊断 Agent：项目计划
 
 > English name: Multimodal Industrial Inspection & Fault Diagnosis Agent  
-> 当前状态：Phase 0-5 已完成，形成 Portfolio MVP 1.0.0 候选版本；尚未创建 Git tag，外部 CI、CI Docker smoke 与真实 Vision live smoke 的状态以发布门禁记录为准。
+> 当前状态：Phase 0-5 已完成，形成 Portfolio MVP 1.0.0 候选版本；另已增加独立 MetroPT-3 真实运行传感器 profile，但完整多模态 Workflow 仍使用 synthetic scenarios。尚未创建 Git tag，外部 CI、CI Docker smoke 与真实 Vision live smoke 的状态以发布门禁记录为准。
 > 项目定位：面向计算机硕士校招简历与 GitHub 展示的个人工程实践，不宣称真实工厂部署、商业效果或未经验证的准确率。
 
 ## 1. 项目背景
@@ -646,6 +646,7 @@ README 只展示通过可复现命令生成的报告，并同时注明 commit、
 
 Portfolio MVP 之后再按证据和需求选择：
 
+- MetroPT-3 已完成来源校验与事件窗口基线；未来若新增专用 detector，必须采用时间切分并与当前未校准基线对比。
 - PostgreSQL + Qdrant，支持在线文档管理与更大数据量。
 - Isolation Forest、change-point、conformal 或 TSFM，与 MVP baseline 做同数据对比。
 - 高频振动 FFT/包络谱和轴承特征频率。

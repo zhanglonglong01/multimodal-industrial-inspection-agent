@@ -4,7 +4,7 @@
 
 ## 项目背景
 
-工业巡检判断通常依赖现场图片、传感器历史、故障模式和维修文档。项目用两个 synthetic asset 和三个固定 scenario，演示从证据采集到高风险审批和 WorkOrder 的完整软件闭环。它是个人工程实践，不代表真实工厂部署或工业准确率。
+工业巡检判断通常依赖现场图片、传感器历史、故障模式和维修文档。项目用两个 synthetic asset 和三个固定 scenario，演示从证据采集到高风险审批和 WorkOrder 的完整软件闭环；同时用 MetroPT-3 的两个真实运行 APU 传感器窗口检验 synthetic detector 的外部适配边界。它仍不代表真实工厂部署或工业准确率。
 
 ## 核心设计问答
 
@@ -64,6 +64,7 @@ Fixture Provider 保证无 Key、无网络、无费用、可重复测试；OpenA
 - Timeline 曾把已有 Draft 误显示为 WorkOrder complete；改为只在正式 WorkOrder 存在时完成。
 - Phase 4 Web 外键使 `seed-demo` 的 DELETE 重置失败；Phase 5 改为 upsert，保留 Inspection 引用。
 - Starlette TestClient 回退旧 `httpx` 产生迁移 warning；安装当前支持的 `httpx2`，未用 warning ignore。
+- MetroPT-3 附带 PDF 写 15,169,480 点/1 Hz，而实际 CSV 和 UCI 当前记录约 1,516,948 点/0.1 Hz；实现固定 ZIP/CSV 双哈希并以实际文件统计为准，文档公开差异。
 
 ## 至少 20 个可能的技术追问
 
@@ -92,10 +93,14 @@ Fixture Provider 保证无 Key、无网络、无费用、可重复测试；OpenA
 23. **为什么 API/Template 不直接查数据库？** route 只调用 application service，避免在展示层复制风险、审批和查询规则。
 24. **CSRF 的边界？** 同站表单使用 double-submit token；这是 demo 基础措施，不等于生产身份认证。
 25. **CI 如何保证不付费？** 固定 `APP_MODE=demo`、`VISION_PROVIDER=fixture`、`RUN_LIVE_TESTS=0`，不注入 Key。
+26. **真实数据来自哪里？** MetroPT-3，来自实际运行地铁列车的压缩机 APU；UCI DOI `10.24432/C5VW3R`，CC BY 4.0。
+27. **为什么不把 MetroPT-3 接进多模态 Workflow？** 它没有同步巡检图片、维修手册或点级异常标签；强行拼接 synthetic 图片会造成来源误导。
+28. **为什么真实数据不报告 precision/recall/F1？** 企业报告只给 Air-leak 事件时间窗，没有每个传感器点的异常标签或方向。
+29. **真实数据结果为什么反而较差？** 参考窗口告警率高于故障窗口，说明 rolling MAD 把压缩机启停状态切换当成异常，当前 detector 未针对该设备校准。
 
 ## 项目限制
 
-面试时必须主动说明：只有两台 synthetic asset、三个 synthetic scenario、四个手工 retrieval query、三张 schematic image；真实 OpenAI Vision 在无 Key 环境未 live verified；无工厂、PLC/SCADA、生产认证、实时处理和安全验证。
+面试时必须主动说明：完整 Workflow 只有两台 synthetic asset、三个 synthetic scenario、四个手工 retrieval query、三张 schematic image；MetroPT-3 只增加两个真实铁路 APU 传感器窗口，不是工厂或真实多模态验证；真实 OpenAI Vision 在无 Key 环境未 live verified；无 PLC/SCADA、生产认证、实时处理和安全验证。
 
 ## 如果进入生产如何扩展
 

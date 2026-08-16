@@ -19,6 +19,7 @@ class StrictModel(BaseModel):
 class AssetType(StrEnum):
     PUMP = "pump"
     MOTOR = "motor"
+    COMPRESSOR = "compressor"
 
 
 class AssetStatus(StrEnum):

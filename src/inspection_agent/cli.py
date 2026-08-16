@@ -14,6 +14,12 @@ from .demo import seed_demo, validate_demo
 from .evaluation import evaluate_detector, evaluate_retrieval
 from .hygiene import assert_repository_hygiene
 from .logging_config import configure_logging, log_event
+from .metropt3 import (
+    download_metropt3,
+    evaluate_metropt3,
+    prepare_metropt3,
+    validate_metropt3,
+)
 from .phase2 import run_scenario_analysis
 from .portfolio_evaluation import run_portfolio_evaluation
 from .repository import SQLiteRepository
@@ -115,6 +121,38 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser(
         "check-hygiene",
         help="Fail if Git tracks runtime artifacts or obvious secret formats",
+    )
+    download_metropt3_parser = commands.add_parser(
+        "download-metropt3",
+        help="Download the pinned UCI MetroPT-3 archive into ignored runtime storage",
+    )
+    download_metropt3_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Replace an existing archive after rechecking the pinned SHA-256",
+    )
+    prepare_metropt3_parser = commands.add_parser(
+        "prepare-metropt3",
+        help="Verify MetroPT-3 and rebuild the two committed real sensor windows",
+    )
+    prepare_metropt3_parser.add_argument(
+        "--archive",
+        type=Path,
+        help="Use an explicit archive instead of data/runtime/metropt3/raw/metropt3.zip",
+    )
+    commands.add_parser(
+        "validate-metropt3",
+        help="Validate the offline MetroPT-3 provenance manifest and derived windows",
+    )
+    metropt3_evaluation_parser = commands.add_parser(
+        "evaluate-metropt3",
+        help="Evaluate the real MetroPT-3 sensor windows without point-label claims",
+    )
+    metropt3_evaluation_parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("evaluation/metropt3"),
+        help="Directory for the MetroPT-3 JSON and Markdown reports",
     )
     return parser
 
@@ -244,6 +282,18 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "check-hygiene":
             assert_repository_hygiene(PROJECT_ROOT)
             _print_json({"status": "passed", "scope": "git commit candidates"})
+            return 0
+        if args.command == "download-metropt3":
+            _print_json(download_metropt3(settings, force=args.force))
+            return 0
+        if args.command == "prepare-metropt3":
+            _print_json(prepare_metropt3(settings, archive_path=args.archive))
+            return 0
+        if args.command == "validate-metropt3":
+            _print_json(validate_metropt3(settings))
+            return 0
+        if args.command == "evaluate-metropt3":
+            _print_json(evaluate_metropt3(settings, output_dir=args.output_dir))
             return 0
     except Exception as exc:
         log_event(

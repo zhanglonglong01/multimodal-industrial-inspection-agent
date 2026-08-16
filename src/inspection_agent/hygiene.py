@@ -37,7 +37,10 @@ def scan_repository(root: Path) -> list[str]:
         if (
             relative.name in FORBIDDEN_TRACKED_NAMES
             or parts & FORBIDDEN_TRACKED_PARTS
-            or any(normalized.startswith(prefix) for prefix in ("data/runtime/",))
+            or any(
+                normalized.startswith(prefix)
+                for prefix in ("data/runtime/", "data/real/metropt3/raw/")
+            )
             or any(normalized.endswith(suffix) for suffix in FORBIDDEN_TRACKED_SUFFIXES)
         ):
             findings.append(f"forbidden commit-candidate runtime/secret path: {normalized}")

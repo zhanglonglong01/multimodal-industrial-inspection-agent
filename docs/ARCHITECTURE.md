@@ -1,7 +1,7 @@
 # 系统架构设计
 
-> 当前状态：Phase 2 已实现 SQLite/CSV demo 数据、Fixture Vision、确定性时序分析、JSON Failure Mode、FAISS 本地检索和模块级 evaluation。  
-> 本文中的 LangGraph、Diagnosis、Risk、FastAPI、Dashboard、审批和工单仍是后续开发边界，不代表仓库当前已有对应实现。
+> 当前状态：Portfolio MVP 已实现 FastAPI Dashboard、单 LangGraph Workflow、Fixture/OpenAI Provider 边界、确定性时序分析、FAISS、HITL、持久化工单与统一 evaluation。
+> 另有独立 MetroPT-3 真实运行传感器 profile；它不进入 synthetic 多模态 Workflow，也不代表真实工厂或真实视觉验证。
 
 ## 1. 架构目标
 
@@ -45,7 +45,7 @@ flowchart TB
 
     subgraph Storage["Persistence"]
         SQLite[("SQLite<br/>metadata / diagnosis / approval / work order")]
-        Series[("Parquet or CSV<br/>sensor series")]
+        Series[("CSV sensor series<br/>synthetic + MetroPT-3 real windows")]
         Files[("Artifact Store<br/>inspection images")]
         FAISS[("FAISS<br/>knowledge vectors")]
         KnowledgeMeta[("JSON<br/>chunk text and citation metadata")]
@@ -240,6 +240,8 @@ flowchart TB
     AssetInput["Selected asset_id"]
     ImageInput["Uploaded inspection image"]
     SensorInput["Synthetic sensor dataset"]
+    RealSensorInput["MetroPT-3 real APU sensors<br/>pinned source + CC BY 4.0"]
+    Provenance["SHA-256 verification<br/>window selection + minute means"]
     KnowledgeInput["Synthetic manual / fault guide / SOP"]
 
     ImageStore[("Artifact Store")]
@@ -264,6 +266,7 @@ flowchart TB
     ImageInput -->|"validate, hash, persist"| ImageStore
     ImageStore -->|"artifact_id"| VisionAnalysis
     SensorInput --> SeriesStore
+    RealSensorInput --> Provenance --> SeriesStore
     SeriesStore -->|"window_ref"| SensorAnalysis
     KnowledgeInput -->|"ingest, chunk, embed"| VectorStore
     FailureCatalog --> FailureLookup
@@ -299,7 +302,7 @@ flowchart TB
 | 数据 | 是否进入 LLM | 保存位置 | 说明 |
 | --- | --- | --- | --- |
 | 原始图片 | 仅发送给配置的 Vision provider | artifact store | 不写普通日志 |
-| 完整时序 | 否 | Parquet/CSV | Python 算法处理 |
+| 完整时序 | 否 | Parquet/CSV | Python 算法处理；synthetic 与 real profile 分开评测 |
 | 时序摘要/异常区间 | 是 | SQLite + state | 数值已由算法计算 |
 | 完整知识文档 | 否 | source files | 只将 top-k chunks 送入 LLM |
 | RAG chunk | 是 | metadata + FAISS | 带 chunk/source/section ID |
@@ -371,7 +374,7 @@ Browser -> FastAPI application
              ├─ SQLite
              ├─ FAISS index
              ├─ image artifacts
-             └─ Parquet/CSV sensor data
+             └─ CSV sensor data (synthetic demo + attributed MetroPT-3 windows)
 ```
 
 真实 Vision/LLM/Embedding provider 是可选外部依赖。未来迁移到 PostgreSQL、Qdrant 或 worker queue 时，domain interface 和 Tool schema 保持不变。

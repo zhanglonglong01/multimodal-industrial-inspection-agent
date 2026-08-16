@@ -28,6 +28,10 @@ def demo_settings(tmp_path: Path) -> Settings:
         PROJECT_ROOT / "data" / "evaluation",
         data_dir / "evaluation",
     )
+    shutil.copytree(
+        PROJECT_ROOT / "data" / "real" / "metropt3",
+        data_dir / "real" / "metropt3",
+    )
     return Settings(
         app_env="test",
         log_level="CRITICAL",

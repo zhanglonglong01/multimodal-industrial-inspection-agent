@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "metric_name": "Real operational sensor event-window analysis",
+  "source_doi": "10.24432/C5VW3R",
+  "license": "CC BY 4.0",
+  "profile_id": "metropt3-real-sensor-v1",
+  "detector": "rule_based_and_rolling_mad",
+  "parameters": {
+    "window_size": 97,
+    "min_periods": 25,
+    "window_alignment": "centered",
+    "robust_z_constant": 0.6745,
+    "mad_threshold": 3.5,
+    "mad_zero_fallback_score": 4.5,
+    "min_segment_points": 2,
+    "max_gap_intervals": 1,
+    "medium_score_threshold": 8.0,
+    "high_score_threshold": 12.0
+  },
+  "window_count": 2,
+  "windows": [
+    {
+      "window_id": "METROPT3-REFERENCE-20200410",
+      "report_relation": "outside_reported_failure",
+      "failure_event_id": null,
+      "row_count": 360,
+      "data_quality_usable": true,
+      "anomaly_point_count": 170,
+      "anomaly_segment_count": 25,
+      "alerted_sensor_ids": [
+        "compressor_pressure",
+        "motor_current"
+      ],
+      "alerted_timestamp_count": 131,
+      "alert_timestamp_rate": 0.3638888888888889,
+      "reported_failure_window_alert_present": null
+    },
+    {
+      "window_id": "METROPT3-AIR-LEAK-20200418",
+      "report_relation": "within_reported_failure",
+      "failure_event_id": "METROPT3-EVENT-01",
+      "row_count": 360,
+      "data_quality_usable": true,
+      "anomaly_point_count": 3,
+      "anomaly_segment_count": 1,
+      "alerted_sensor_ids": [
+        "pneumatic_panel_pressure"
+      ],
+      "alerted_timestamp_count": 3,
+      "alert_timestamp_rate": 0.008333333333333333,
+      "reported_failure_window_alert_present": true
+    }
+  ],
+  "limitations": [
+    "No point-level precision, recall, or F1 is reported because MetroPT-3 provides event reports rather than point labels.",
+    "The outside-report window is a reference window, not verified healthy ground truth.",
+    "Alerts can reflect normal compressor operating-state transitions.",
+    "Configured operating ranges are analysis guardrails, not validated manufacturer limits.",
+    "The selected profile contains real sensors only; Vision, RAG, diagnosis, and WorkOrder remain synthetic-demo capabilities."
+  ]
+}

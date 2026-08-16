@@ -213,6 +213,8 @@ tempCodeRunnerFile.py
 
 # Project runtime state (versioned demo CSV/manifests remain tracked)
 data/runtime/
+# Defense in depth if a user overrides the MetroPT-3 raw download location.
+data/real/metropt3/raw/
 *.db-wal
 *.db-shm
 

@@ -118,6 +118,22 @@ class Settings(BaseSettings):
         return self.data_dir / "evaluation" / "retrieval_queries.json"
 
     @property
+    def metropt3_profile_dir(self) -> Path:
+        return self.data_dir / "real" / "metropt3"
+
+    @property
+    def metropt3_manifest_path(self) -> Path:
+        return self.metropt3_profile_dir / "manifest.json"
+
+    @property
+    def metropt3_runtime_dir(self) -> Path:
+        return self.data_dir / "runtime" / "metropt3"
+
+    @property
+    def metropt3_archive_path(self) -> Path:
+        return self.metropt3_runtime_dir / "raw" / "metropt3.zip"
+
+    @property
     def uploads_dir(self) -> Path:
         return self.data_dir / "runtime" / "uploads"
 
@@ -127,6 +143,7 @@ class Settings(BaseSettings):
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
         self.checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         self.uploads_dir.mkdir(parents=True, exist_ok=True)
+        self.metropt3_runtime_dir.mkdir(parents=True, exist_ok=True)
         self.scenarios_dir.mkdir(parents=True, exist_ok=True)
         self.fixtures_dir.mkdir(parents=True, exist_ok=True)
 

@@ -1,17 +1,17 @@
 # Multimodal Industrial Inspection & Fault Diagnosis Agent
 
-![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB)
+![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 An evidence-driven portfolio application that combines inspection images, historical sensor analysis, maintenance knowledge, persistent workflow state, human approval, and protected WorkOrder creation.
 
-> All bundled assets, images, sensor series, manuals, labels, and scenarios are synthetic. This project is not a factory-validated or production safety system.
+> The end-to-end multimodal scenarios remain synthetic. The repository additionally includes two attributed sensor windows derived from the real MetroPT-3 railway APU dataset. This project is not factory-validated or a production safety system.
 
 ![31.5-second synthetic demo flow](docs/images/demo.gif)
 
 ## Overview
 
-The application demonstrates one complete inspection loop for two synthetic assets (`PUMP-001`, `MOTOR-001`) and three versioned scenarios. A single LangGraph workflow coordinates typed services; deterministic Python handles sensor anomalies and risk; an LLM provider is limited to evidence-aware synthesis. High-risk side effects pause for human approval and resume from a SQLite checkpoint.
+The application demonstrates one complete inspection loop for two synthetic assets (`PUMP-001`, `MOTOR-001`) and three versioned scenarios. A separate `APU-001` profile evaluates real operational compressor sensor data from MetroPT-3 without pretending that the source includes images or factory validation. A single LangGraph workflow coordinates typed services; deterministic Python handles sensor anomalies and risk; an LLM provider is limited to evidence-aware synthesis.
 
 ## Why this project
 
@@ -84,7 +84,7 @@ flowchart TB
     Graph --> Risk["Deterministic risk policy"]
     Graph --> WO["Approval-guarded WorkOrder service"]
     App --> SQLite["SQLite metadata + LangGraph checkpoints"]
-    Sensor --> CSV["Versioned synthetic CSV"]
+    Sensor --> CSV["Synthetic CSV + real MetroPT-3 windows"]
     RAG --> Files["Synthetic manuals + local index"]
 ```
 
@@ -93,6 +93,7 @@ flowchart TB
 - One checkpointed LangGraph workflow with degraded routing and real `interrupt` / `Command(resume=...)` behavior.
 - Secure PNG/JPEG/WebP upload validation, generated filenames, hashes, decode checks, and path confinement.
 - Deterministic historical-window sensor analysis with data-quality reporting and anomaly segments.
+- Reproducible MetroPT-3 download, two-level SHA-256 verification, derived real sensor windows, and event-window evaluation.
 - Controlled failure-mode candidates and citation-bearing FAISS retrieval.
 - Structured diagnosis with primary/alternative candidates, supporting/contradicting evidence, missing evidence, and uncertainty.
 - Deterministic risk matrix and approval-protected, idempotent WorkOrder creation.
@@ -106,6 +107,8 @@ Vision findings, sensor segments, and knowledge chunks become a shared `Evidence
 ## Sensor Analysis
 
 The detector combines configured operating limits with a centered rolling median/MAD robust score, data-quality validation, and contiguous segment aggregation. It analyzes a bounded offline historical CSV window; it is not a real-time streaming detector. Numerical anomaly decisions are Python code, not LLM estimates.
+
+The [MetroPT-3 profile](docs/METROPT3_DATA.md) adds real operational pressure, oil-temperature, and motor-current measurements from a metro-train compressor APU. It is evaluated separately because it has company failure-event windows but no point-level sensor labels or synchronized images. The unchanged detector alerts 36.39% of timestamps in the outside-report reference window and 0.83% in the reported Air-leak window; this negative result is evidence that the synthetic-demo detector is not calibrated for the real operating-state transitions, not an accuracy claim.
 
 ## Vision
 
@@ -128,7 +131,7 @@ HIGH/CRITICAL drafts trigger a LangGraph interrupt. The persisted approval binds
 - SQLite stores demo metadata, inspections, runs, drafts, approvals, WorkOrders, and independent ToolTrace attempts.
 - `langgraph-checkpoint-sqlite` persists graph state across process restart.
 - A unique Draft-to-WorkOrder relationship and stable idempotency key prevent duplicate WorkOrders.
-- CSV files keep time-series data outside graph checkpoints; FAISS and chunk metadata can be rebuilt from tracked synthetic sources.
+- CSV files keep time-series data outside graph checkpoints; FAISS and chunk metadata can be rebuilt from tracked source files. The full MetroPT-3 archive stays in ignored runtime storage.
 
 ## Evaluation
 
@@ -139,15 +142,17 @@ Run `inspection-agent evaluate` to create [evaluation/report.json](evaluation/re
 | Sensor point precision / recall / F1 | 1.0000 / 0.8917 / 0.9427 | 2 anomalous synthetic scenarios; normal reported separately |
 | Sensor segment precision / recall / F1 | 1.0000 / 1.0000 / 1.0000 | 4 injected segments |
 | Normal case | Pass | 1 scenario; no undefined positive-class F1 claim |
+| MetroPT-3 reference alert rate | 36.39% | 1 real six-hour window outside published failure reports; not verified healthy |
+| MetroPT-3 Air-leak-window alert rate | 0.83% | 1 real six-hour window inside a company failure report; no point labels |
 | Retrieval Recall@1 / Recall@3 / MRR | 1.0000 / 1.0000 / 1.0000 | Only 4 manually defined queries |
 | Workflow task success | 3/3 | Synthetic scenario task success, not diagnosis accuracy |
 | Safety/idempotency checks | 5/5 | Approval, bypass, duplicate create, restart/resume, dual failure |
 
-These numbers are deterministic portfolio-fixture results. They are not industrial fault-diagnosis accuracy, real Vision accuracy, generalization evidence, or a production benchmark.
+Synthetic metrics remain deterministic portfolio-fixture results. MetroPT-3 numbers are event-window observations, not precision/recall/F1, industrial diagnosis accuracy, real Vision accuracy, or a production benchmark.
 
 ## Testing
 
-Default tests are offline and use Fixture Vision/Diagnosis. Final local validation collected **102 tests: 101 passed and 1 opt-in live Vision test skipped**. Coverage includes schemas, seed reproducibility, sensors, retrieval, provider boundaries, workflow routing, degraded modes, approval enforcement, idempotency, restart/resume, API/upload security, templates, and three scenario flows.
+Default tests are offline and use Fixture Vision/Diagnosis. Current local validation collected **105 tests: 104 passed and 1 opt-in live Vision test skipped**. Coverage includes schemas, seed reproducibility, synthetic and real sensor profiles, provenance/tamper checks, retrieval, provider boundaries, workflow routing, degraded modes, approval enforcement, idempotency, restart/resume, API/upload security, templates, and three scenario flows. The same counts are recorded in `evaluation/report.json`.
 
 ```bash
 ruff check .
@@ -160,7 +165,7 @@ python -m build
 
 ## Quick Start
 
-Requires Python 3.11+.
+Requires Python 3.12+.
 
 ```bash
 git clone https://github.com/zhanglonglong01/multimodal-industrial-inspection-agent.git
@@ -171,6 +176,19 @@ uvicorn inspection_agent.web:app --host 127.0.0.1 --port 8000
 ```
 
 Open <http://127.0.0.1:8000>. API documentation is at <http://127.0.0.1:8000/docs>.
+
+## Real Sensor Data
+
+The two small attributed MetroPT-3 windows required for offline validation are already versioned. To reproduce them from the official 208 MB UCI archive:
+
+```bash
+inspection-agent download-metropt3
+inspection-agent prepare-metropt3
+inspection-agent validate-metropt3
+inspection-agent evaluate-metropt3
+```
+
+The source is real railway APU operational data licensed CC BY 4.0, not factory production-line data. Raw files remain under ignored `data/runtime/metropt3/`; source and derived hashes, preprocessing, timestamp assumptions, failure reports, and limitations are documented in [docs/METROPT3_DATA.md](docs/METROPT3_DATA.md).
 
 ## Docker
 
@@ -218,8 +236,10 @@ src/inspection_agent/
 ├── web.py                  # FastAPI routes and HTML controllers
 ├── templates/ + static/    # Jinja2/HTMX/Plotly Dashboard
 ├── portfolio_evaluation.py # Unified offline report
+├── metropt3.py             # Real sensor download, preparation, validation, evaluation
 └── hygiene.py              # Tracked-file secret/runtime checks
-data/                       # Versioned synthetic source data and documents
+data/demo + knowledge/      # Versioned synthetic scenarios and documents
+data/real/metropt3/         # Attributed derived real operational sensor windows
 evaluation/                 # Generated committed Portfolio report
 docs/images/                # Actual demo screenshots and GIF
 tests/                      # Offline unit and integration suite
@@ -236,6 +256,7 @@ Main routes: `GET /health`, `GET /ready`, `GET /api/assets`, `GET /api/assets/{i
 - **Deterministic sensor and risk logic:** measurements, thresholds, permissions, and side effects must be testable and auditable.
 - **Fixture providers by default:** tests, CI, interviews, and demos must work without credentials, network access, cost, or nondeterministic provider output.
 - **Provider abstraction:** real Vision/Diagnosis adapters can replace fixtures without changing workflow schemas or evaluation ground truth.
+- **Separate real-data profile:** MetroPT-3 is not inserted into the synthetic multimodal Workflow because it has no synchronized images, manuals, or point-level anomaly labels.
 
 ## Relationship to IBM AssetOpsBench
 
@@ -245,7 +266,9 @@ This repository is not a fork, does not copy AssetOpsBench source code or benchm
 
 ## Limitations
 
-- Only two synthetic assets, three synthetic scenarios, four manual retrieval queries, and three schematic images.
+- The complete multimodal Workflow still has only two synthetic assets, three synthetic scenarios, four manual retrieval queries, and three schematic images.
+- MetroPT-3 contributes only two six-hour real sensor windows; it is railway APU data, not factory production-line or synchronized multimodal data.
+- MetroPT-3 event reports are coarse windows. The outside-report reference is not verified healthy, and current detector alerts show poor calibration for compressor state transitions.
 - Fixture providers are the reproducible default; real Vision was not live-verified in the final local environment.
 - No real factory, PLC, SCADA, CMMS, streaming bus, production authentication, RBAC, or industrial safety validation.
 - Historical-window CSV analysis, not online condition monitoring.
@@ -255,8 +278,8 @@ This repository is not a fork, does not copy AssetOpsBench source code or benchm
 
 ## Roadmap
 
-Potential future work—not implemented in v1.0—includes factory-approved datasets, calibrated real-Vision evaluation, authenticated reviewers, external artifact storage, asynchronous jobs, richer observability, and an optional MCP gateway. These are roadmap items, not current features.
+Potential future work—not implemented in v1.0—includes factory-approved multimodal datasets, a MetroPT-3-specific calibrated detector with leakage-safe temporal splits, calibrated real-Vision evaluation, authenticated reviewers, external artifact storage, asynchronous jobs, richer observability, and an optional MCP gateway. These are roadmap items, not current features.
 
 ## License
 
-Released under the [MIT License](LICENSE). Third-party projects retain their own licenses and trademarks.
+Project code is released under the [MIT License](LICENSE). The derived MetroPT-3 windows retain the dataset's CC BY 4.0 terms and attribution in [data/real/metropt3/LICENSE_NOTICE.md](data/real/metropt3/LICENSE_NOTICE.md). Third-party projects retain their own licenses and trademarks.
